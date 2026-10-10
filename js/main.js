@@ -305,15 +305,15 @@ function rankingView() {
     }
     list.replaceChildren(h('p', { class: 'muted center' }, 'Cargando…'));
     try {
-      const rows = await fetchRanking(mode);
-      if (!rows.some(r => r.id === s.id)) rows.push(me);
+      await pushScore(true);
+      const rows = (await fetchRanking(mode)).filter(r => r.id !== s.id);
+      rows.push(me);
       rows.sort((a, b) => (mode === 'semana' ? b.xp_semana - a.xp_semana : b.xp - a.xp));
       list.replaceChildren(...rows.map(row));
     } catch {
       list.replaceChildren(h('p', { class: 'muted center' }, 'No se pudo cargar el ranking. ¿Hay conexión?'), row(me, 0));
     }
   }
-  pushScore();
   load();
   return h('div', { class: 'rank-page' },
     h('div', { class: 'rank-head' },

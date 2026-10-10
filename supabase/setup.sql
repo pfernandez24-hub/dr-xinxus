@@ -14,6 +14,9 @@ create index if not exists jugadores_clase_xp on public.jugadores (clase, xp des
 
 alter table public.jugadores enable row level security;
 
+-- Los proyectos nuevos no dan acceso automático a la API: se concede solo lo necesario.
+grant select, insert, update on public.jugadores to anon;
+
 -- Cualquiera con la clave pública puede leer el ranking y crear/actualizar su fila.
 -- Es una app entre compañeros: no hay contraseñas, así que no protege frente a trampas.
 drop policy if exists "leer ranking" on public.jugadores;

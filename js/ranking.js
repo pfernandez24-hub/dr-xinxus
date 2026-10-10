@@ -15,24 +15,28 @@ function headers(extra = {}) {
 
 let pushTimer = null;
 
-// Sube tu XP (con un pequeño retardo para agrupar cambios).
-export function pushScore() {
-  if (!rankingEnabled()) return;
+async function sendScore() {
+  const s = store.get();
+  if (!s.nick) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/jugadores?on_conflict=id`, {
+      method: 'POST',
+      headers: headers({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify({
+        id: s.id, apodo: s.nick, clase: s.clase || 'GENERAL', xp: s.xp,
+        xp_semana: s.weekly.xp, semana: s.weekly.week, racha: s.streak.count,
+      }),
+    });
+  } catch { /* sin conexión: se reintenta en el próximo cambio */ }
+}
+
+// Sube tu XP. Con now=false espera un poco para agrupar cambios seguidos.
+export function pushScore(now = false) {
+  if (!rankingEnabled()) return Promise.resolve();
   clearTimeout(pushTimer);
-  pushTimer = setTimeout(async () => {
-    const s = store.get();
-    if (!s.nick) return;
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/jugadores?on_conflict=id`, {
-        method: 'POST',
-        headers: headers({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
-        body: JSON.stringify({
-          id: s.id, apodo: s.nick, clase: s.clase || 'GENERAL', xp: s.xp,
-          xp_semana: s.weekly.xp, semana: s.weekly.week, racha: s.streak.count,
-        }),
-      });
-    } catch { /* sin conexión: se reintenta en el próximo cambio */ }
-  }, 800);
+  if (now) return sendScore();
+  pushTimer = setTimeout(sendScore, 800);
+  return Promise.resolve();
 }
 
 // mode: 'semana' | 'total'

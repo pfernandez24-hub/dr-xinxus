@@ -1,0 +1,23 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Pruebas de la terminal</title>
+<pre id="out" style="white-space:pre-wrap;font:12px monospace"></pre>
+<script type="module">
+import { Shell } from '../js/shell.js';
+const out = document.getElementById('out');
+const results = [];
+function run(sh, line) {
+  const chunks = sh.run(line);
+  const text = chunks.map(c => (c.kind === 'err' ? '[E]' : c.kind === 'info' ? '[I]' : '') + c.text).join('').replace(/\x1b\[[0-9;]*m/g, '');
+  results.push(`${sh.prompt()}${line}\n${text}`);
+  return text;
+}
+window.runAll = (lines, opts) => {
+  const sh = new Shell(opts);
+  results.length = 0;
+  for (const l of lines) run(sh, l);
+  out.textContent = results.join('');
+  return results.join('');
+};
+window.Shell = Shell;
+</script>

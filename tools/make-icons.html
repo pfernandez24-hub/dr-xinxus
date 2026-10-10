@@ -1,0 +1,39 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Generar iconos</title>
+<body style="background:#222">
+<div id="out"></div>
+<script type="module">
+// Dibuja el icono de la app en un canvas y lo deja en window.icons como data URLs PNG.
+import { mascot } from '../js/mascot.js';
+
+function iconSvg(size) {
+  const inner = mascot('happy', Math.round(size * 0.78))
+    .replace('<svg ', `<svg x="${Math.round(size * 0.11)}" y="${Math.round(size * 0.12)}" `);
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <rect width="${size}" height="${size}" fill="#58cc02"/>
+    <circle cx="${size / 2}" cy="${size / 2}" r="${size * 0.44}" fill="#46a302"/>
+    ${inner.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ')}
+  </svg>`;
+}
+
+async function toPng(size) {
+  const svg = iconSvg(size);
+  const img = new Image();
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  await img.decode();
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  c.getContext('2d').drawImage(img, 0, 0, size, size);
+  document.getElementById('out').append(c);
+  return c.toDataURL('image/png');
+}
+
+window.iconSvg = iconSvg;
+window.icons = {
+  'icon-192.png': await toPng(192),
+  'icon-512.png': await toPng(512),
+  'apple-touch-icon.png': await toPng(180),
+};
+window.ready = true;
+</script>

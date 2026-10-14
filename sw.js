@@ -1,11 +1,11 @@
 // Service worker: deja la app disponible sin conexión.
 // Al publicar una versión nueva, sube el número de VERSION para que los móviles la actualicen.
-const VERSION = 'drxinxus-v2';
+const VERSION = 'drxinxus-v3';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'css/styles.css',
   'js/main.js', 'js/dom.js', 'js/store.js', 'js/content.js', 'js/lesson.js', 'js/shell.js', 'js/vfs.js',
   'js/seed.js', 'js/bash-parser.js', 'js/terminal-ui.js', 'js/editor.js', 'js/mascot.js', 'js/sound.js',
-  'js/achievements.js', 'js/ranking.js', 'js/config.js', 'js/data/repo.js', 'js/data/man.js',
+  'js/achievements.js', 'js/ranking.js', 'js/config.js', 'js/data/repo.js', 'js/data/man.js', 'js/data/pdb.js',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
 ];
 

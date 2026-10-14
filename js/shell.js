@@ -5,6 +5,7 @@ import { buildWorld, buildRepo, REPO_URL, REPO_NAME, make1HVR, BINARIES } from '
 import { REPO_FILES } from './data/repo.js';
 import { parse, BashSyntaxError } from './bash-parser.js';
 import { MAN_PAGES } from './data/man.js';
+import { PDB_ENTRIES, makePdb, countPdb, sasaFor } from './data/pdb.js';
 
 class ExitSignal { constructor(code) { this.code = code; } }
 class LoopSignal { constructor(kind, n) { this.kind = kind; this.n = n; } }
@@ -69,7 +70,7 @@ function splitLines(text) {
 }
 
 function traceQuote(a) {
-  return /[\s'"$*?|&;<>()]/.test(a) || a === '' ? `'${a.replace(/'/g, "'\\''")}'` : a;
+  return /[\s'"$*?|&;<>()[\]!]/.test(a) || a === '' ? `'${a.replace(/'/g, "'\\''")}'` : a;
 }
 
 export class Shell {
@@ -283,6 +284,8 @@ export class Shell {
         let s = 0;
         for (const item of items) {
           this.tick();
+          if (p.trace) io2.err(`+ for ${node.name} in ${node.words === null ? '"$@"' : node.words.join(' ')}
+`);
           this.setVar(p, node.name, item);
           try {
             s = this.execList(node.body, p, io2);
@@ -1197,6 +1200,39 @@ const COMMANDS = {
   },
 
   grep(args, p, io) {
+    const LONG = { '--count': '-c', '--quiet': '-q', '--silent': '-q', '--invert-match': '-v', '--ignore-case': '-i', '--line-number': '-n', '--extended-regexp': '-E', '--word-regexp': '-w', '--only-matching': '-o', '--files-with-matches': '-l' };
+    if (args.includes('--help')) {
+      io.out(`Usage: grep [OPTION]... PATTERNS [FILE]...
+Search for PATTERNS in each FILE.
+Example: grep -i 'hello world' menu.h main.c
+
+Pattern selection and interpretation:
+  -E, --extended-regexp     PATTERNS are extended regular expressions
+  -i, --ignore-case         ignore case distinctions in patterns and data
+  -w, --word-regexp         match only whole words
+
+Miscellaneous:
+  -v, --invert-match        select non-matching lines
+
+Output control:
+  -n, --line-number         print line number with output lines
+  -o, --only-matching       show only nonempty parts of lines that match
+  -q, --quiet, --silent     suppress all normal output
+  -l, --files-with-matches  print only names of FILEs with selected lines
+  -c, --count               print only a count of selected lines per FILE
+`);
+      return 0;
+    }
+    const dd = args.indexOf('--');
+    const bad = args.find((a, i) => a.startsWith('--') && a !== '--' && !LONG[a] && (dd < 0 || i < dd));
+    if (bad) {
+      io.err(`grep: unrecognized option '${bad}'
+Usage: grep [OPTION]... PATTERNS [FILE]...
+Try 'grep --help' for more information.
+`);
+      return 2;
+    }
+    args = args.map((a, i) => (LONG[a] && (dd < 0 || i < dd) ? LONG[a] : a));
     const { flags, rest, values } = parseOpts(args, ['e']);
     let pattern = values.e ?? rest.shift();
     if (pattern === undefined) { io.err("Usage: grep [OPTION]... PATTERNS [FILE]...\nTry 'grep --help' for more information.\n"); return 2; }
@@ -1540,6 +1576,132 @@ const COMMANDS = {
   },
   python3(args, p, io) { io.info('ℹ Dr.Xinxus no ejecuta Python (todavía). En el servidor sí está instalado.\n'); return 0; },
   sleep() { return 0; },
+
+  // ----- Tema 1C: pdb-tools y FreeSASA -----
+  pdb_fetch(args, p, io) {
+    const code = args.find(a => !a.startsWith('-')) ?? args[args.length - 1];
+    if (!args.length) {
+      io.err('Downloads a structure in PDB format from the RCSB website.\n\nAllows downloading the (first) biological structure if selected.\n\nUsage:\n    python pdb_fetch.py [-biounit] <pdb code>\n\nExample:\n    python pdb_fetch.py 1brs  # downloads unit cell, all 6 chains\n    python pdb_fetch.py -biounit 1brs  # downloads biounit, 2 chains\n\nThis program is part of the `pdb-tools` suite of utilities and should not be\ndistributed isolatedly.\n');
+      return 1;
+    }
+    if (!/^[0-9a-zA-Z]{4}$/.test(code)) { io.err(`ERROR!! Invalid PDB code: '${code}'\n`); return 1; }
+    const content = makePdb(code);
+    if (!content) {
+      io.err(`ERROR!! Error fetching structure: (404) Not Found\n`);
+      if (!/^0/.test(code)) io.info(`ℹ Dr.Xinxus solo tiene guardadas: ${Object.keys(PDB_ENTRIES).join(' ')}. En el servidor, ${code} se descargaría.\n`);
+      return 1;
+    }
+    io.out(content);
+    return 0;
+  },
+  pdb_wc(args, p, io) {
+    const opts = args.filter(a => /^-[a-z]$/.test(a));
+    const files = args.filter(a => !a.startsWith('-'));
+    if (!files.length && io.tty && !io.stdin) {
+      io.err('Summarizes the contents of a PDB file, like the wc command in UNIX.\n\nUsage:\n    python pdb_wc.py [-<option>] <pdb file>\n\nExample:\n    python pdb_wc.py 1CTF.pdb\n    python pdb_wc.py -m 1CTF.pdb  # prints only number of models\n\nOptions: -m models, -c chains, -r residues, -a atoms, -h HETATM, -o multiple occupancy, -i insertions\n');
+      return 1;
+    }
+    const { items, status } = readInputs(this, 'pdb_wc', files, io);
+    if (!items.length) return status || 1;
+    const c = countPdb(items[0].text);
+    const per = n => `(${(c.models ? n / c.models : 0).toFixed(1).padStart(6)}/model)`;
+    const rows = {
+      m: `No. models:\t${c.models}`,
+      c: `No. chains:\t${c.chains}\t${per(c.chains)}`,
+      r: `No. residues:\t${c.residues}\t${per(c.residues)}`,
+      a: `No. atoms:\t${c.atoms}\t${per(c.atoms)}`,
+      h: `No. HETATM:\t${c.hetatm}`,
+      o: 'Multiple Occ.:\tFalse',
+      i: 'Res. Inserts:\tFalse',
+    };
+    const keys = opts.length ? opts.map(o => o[1]).filter(k => rows[k]) : Object.keys(rows);
+    keys.forEach(k => io.out(rows[k] + '\n'));
+    return 0;
+  },
+  freesasa(args, p, io) {
+    if (args.includes('-h') || args.includes('--help')) {
+      io.out('Usage: freesasa [options] pdb-file(s)\n\nOptions are:\n  -h  --help\n  -v  --version\n\nInput options:\n  -H  --hydrogen\n      --hetatm\n      --join-models\n      --separate-chains\n      --separate-models\n\nOutput options:\n  -w  --no-warnings\n  -l  --no-log\n  -f  --format=log|rsa|json|xml|pdb|res|seq\n  -o  --output=<file>\n\nParameters:\n  -L  --lee-richards\n  -S  --shrake-rupley\n  -p  --probe-radius=<value>  (default 1.4)\n');
+      return 0;
+    }
+    if (args.includes('-v') || args.includes('--version')) { io.out('FreeSASA 2.1.2\n'); return 0; }
+    const hyd = args.includes('--hydrogen') || args.includes('-H');
+    const het = args.includes('--hetatm');
+    const quiet = args.includes('--no-warnings') || args.includes('-w');
+    let format = 'log';
+    args.forEach((a, i) => {
+      if (a.startsWith('--format=')) format = a.slice(9);
+      if (a === '-f') format = args[i + 1];
+    });
+    const file = args.filter((a, i) => !a.startsWith('-') && args[i - 1] !== '-f')[0];
+    if (!file) { io.err('freesasa: error: no input files given\n'); return 1; }
+    const node = this.get(file);
+    if (!node || node.type !== 'f') { io.err(`freesasa: error: could not open file '${file}'; No such file or directory\n`); return 1; }
+    const s = sasaFor(node.content);
+    if (!s.atoms) { io.err(`freesasa: error: input had no valid ATOM or HETATM coordinates\n`); return 1; }
+    if (!quiet && hyd && s.hydrogens) {
+      io.err(`freesasa: warning: guessing element for atom ' H  ', setting radius to 1.10\n`.repeat(2));
+      io.info(`ℹ … y así hasta ${s.hydrogens} avisos, uno por hidrógeno (--no-warnings los quita).\n`);
+    }
+    if (!quiet && het && s.hetatm) {
+      io.err(`freesasa: warning: atom 'C1 ' in residue '${s.code === '1hvr' ? 'XK2' : 'HET'}' unknown, guessing radius\n`.repeat(2));
+      io.info('ℹ … el servidor da unos 60 avisos: radios estimados para los heteroátomos.\n');
+    }
+    const used = s.atoms - (hyd ? 0 : s.hydrogens) + (het ? s.hetatm : 0);
+    const e = s.entry;
+    const total = e ? e.total : used * 9.2;
+    const apolar = e ? e.apolar : total * 0.55;
+    if (format === 'rsa') {
+      io.out(`REM  FreeSASA 2.1.2\nREM  Absolute and relative SASAs for ${file}\nREM  Atomic radii and reference values for relative SASA: ProtOr\nREM RES _ NUM      All-atoms   Total-Side   Main-Chain    Non-polar    All polar\nREM                ABS   REL    ABS   REL    ABS   REL    ABS   REL    ABS   REL\n`);
+      const lines = node.content.split('\n').filter(l => l.startsWith('ATOM') && l.slice(12, 16).trim() === 'CA');
+      lines.forEach((l, i) => {
+        const res = l.slice(17, 20);
+        const num = Number(l.slice(22, 26));
+        const known = e?.rsaCys && res === 'CYS' ? e.rsaCys[num] : null;
+        const abs = known ? known[0] : (Math.abs(Math.sin(i * 2.3)) * 120);
+        const rel = known ? known[1] : Math.min(100, abs / 1.6);
+        io.out(`RES ${res} ${l[21]}${String(num).padStart(4)} ${abs.toFixed(2).padStart(8)} ${rel.toFixed(1).padStart(5)}\n`);
+      });
+      return 0;
+    }
+    io.out(`## FreeSASA 2.1.2 ##\n\nPARAMETERS\nalgorithm    : Lee & Richards\nprobe-radius : 1.400\nthreads      : 2\nslices       : 20\n\nINPUT\nsource  : ${file}\nchains  : ${'ABCD'.slice(0, Math.max(1, s.chains))}\nmodel   : 1\natoms   : ${used}\n\nRESULTS (A^2)\nTotal   : ${total.toFixed(2).padStart(10)}\nApolar  : ${apolar.toFixed(2).padStart(10)}\nPolar   : ${(e?.polar ?? total - apolar).toFixed(2).padStart(10)}\n`);
+    if (!e || hyd || het) io.info(`ℹ Dr.Xinxus: ${e ? 'con estas opciones solo se recalcula el nº de átomos' : 'fichero propio: áreas estimadas'}; las áreas reales salen en el servidor.\n`);
+    return 0;
+  },
+  which(args, p, io) {
+    let status = 0;
+    const dirs = (p.vars.PATH || '').split(':').filter(Boolean);
+    for (const a of args.filter(x => !x.startsWith('-'))) {
+      const hit = dirs.map(d => normalize(d + '/' + a)).find(abs => this.fs.get(abs)?.type === 'f');
+      if (hit) io.out(hit + '\n');
+      else status = 1;
+    }
+    return status;
+  },
+  timeout(args, p, io) {
+    if (args.length < 2) { io.err("timeout: missing operand\nTry 'timeout --help' for more information.\n"); return 125; }
+    try {
+      return this.runCommand(args.slice(1), p, io);
+    } catch (e) {
+      if (!(e instanceof StepLimit)) throw e;
+      this.steps = 0;
+      return 124;
+    }
+  },
+  tr(args, p, io) {
+    const del = args[0] === '-d';
+    const sets = (del ? args.slice(1) : args).map(s => s
+      .replace(/\\r/g, '\r').replace(/\\n/g, '\n').replace(/\\t/g, '\t')
+      .replace(/(.)-(.)/g, (_, a, b) => { let r = ''; for (let c = a.charCodeAt(0); c <= b.charCodeAt(0); c++) r += String.fromCharCode(c); return r; }));
+    let out = '';
+    for (const ch of io.stdin) {
+      const i = sets[0]?.indexOf(ch) ?? -1;
+      if (i < 0) out += ch;
+      else if (!del) out += sets[1]?.[Math.min(i, sets[1].length - 1)] ?? ch;
+    }
+    io.out(out);
+    return 0;
+  },
+  awk(args, p, io) { return awk.call(this, args, io); },
 };
 COMMANDS.python = COMMANDS.python3;
 COMMANDS.true = BUILTINS.true;
@@ -1674,6 +1836,217 @@ function git(args, p, io) {
   }
   io.err(`git: '${sub}' is not a git command. See 'git --help'.\n`);
   return 1;
+}
+
+// ---------- awk (subconjunto) ----------
+// Admite: patrones /regex/, expresiones, BEGIN y END; acciones con print, printf,
+// asignaciones, if, aritmética, $N, $NF, NR, NF; -F separador.
+
+function awkSprintf(fmt, vals) {
+  let k = 0;
+  return fmt.replace(/%([-+ 0]*)(\d*)(?:\.(\d+))?([sdifc%])/g, (m, flags, width, prec, type) => {
+    if (type === '%') return '%';
+    const v = vals[k++];
+    let s;
+    if (type === 'd' || type === 'i') s = String(Math.trunc(Number(v) || 0));
+    else if (type === 'f') s = (Number(v) || 0).toFixed(prec === undefined ? 6 : Number(prec));
+    else if (type === 'c') s = typeof v === 'number' ? String.fromCharCode(v) : String(v ?? '')[0] || '';
+    else s = prec !== undefined ? String(v ?? '').slice(0, Number(prec)) : String(v ?? '');
+    const w = Number(width || 0);
+    if (s.length < w) s = flags.includes('-') ? s.padEnd(w) : s.padStart(w, flags.includes('0') && type !== 's' ? '0' : ' ');
+    return s;
+  });
+}
+
+// Divide el programa en reglas { pattern, action }.
+function awkRules(src) {
+  const rules = [];
+  let i = 0;
+  const skipWs = () => { while (i < src.length && /[\s;]/.test(src[i])) i++; };
+  while (true) {
+    skipWs();
+    if (i >= src.length) break;
+    let pattern = '';
+    while (i < src.length && src[i] !== '{') {
+      if (src[i] === '/') {
+        const j = src.indexOf('/', i + 1);
+        pattern += src.slice(i, j + 1);
+        i = j + 1;
+        continue;
+      }
+      if (src[i] === '"') {
+        const j = src.indexOf('"', i + 1);
+        pattern += src.slice(i, j + 1);
+        i = j + 1;
+        continue;
+      }
+      if (src[i] === '\n' && pattern.trim()) break;
+      pattern += src[i++];
+    }
+    let action = null;
+    if (src[i] === '{') {
+      let depth = 0;
+      const start = i;
+      for (; i < src.length; i++) {
+        if (src[i] === '"') { i = src.indexOf('"', i + 1); continue; }
+        if (src[i] === '{') depth++;
+        else if (src[i] === '}' && --depth === 0) { i++; break; }
+      }
+      action = src.slice(start + 1, i - 1);
+    }
+    rules.push({ pattern: pattern.trim(), action });
+  }
+  return rules;
+}
+
+function awkExpr(code) {
+  // Campos: $0, $3, $NF, $(i+1)
+  return code
+    .replace(/(\S+|\$\w+|"[^"]*")\s*(!?)~\s*\/((?:\\\/|[^/])*)\//g, (_, lhs, neg, re) => `${neg ? '!' : ''}/${re}/.test(${lhs})`)
+    .replace(/\$\(([^)]*)\)/g, '__f($1)')
+    .replace(/\$(NF|\d+|[A-Za-z_]\w*)/g, '__f($1)');
+}
+
+function awkStatement(stmt) {
+  const s = stmt.trim();
+  if (!s) return '';
+  let m = s.match(/^printf\s*\(?\s*([\s\S]*?)\)?\s*$/);
+  if (m && s.startsWith('printf')) return `__out(__sprintf(${awkExpr(m[1])}));`;
+  m = s.match(/^print\b\s*([\s\S]*)$/);
+  if (m) {
+    const argsSrc = m[1].trim();
+    if (!argsSrc) return '__out(__f(0) + "\\n");';
+    const parts = splitTop(argsSrc, ',').map(a => {
+      const terms = splitTop(a.trim(), ' ').filter(Boolean);
+      const simple = terms.every(t => /^("[^"]*"|\$\w+|\$\([^)]*\)|[A-Za-z_]\w*|\d+(\.\d+)?|\([^)]*\))$/.test(t));
+      return terms.length > 1 && simple ? `__cat(${terms.map(awkExpr).join(',')})` : awkExpr(a);
+    });
+    return `__out([${parts.join(',')}].join(" ") + "\\n");`;
+  }
+  return awkExpr(s) + ';';
+}
+
+function splitTop(src, sep) {
+  const out = [];
+  let depth = 0;
+  let cur = '';
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (c === '"') { const j = src.indexOf('"', i + 1); cur += src.slice(i, j + 1); i = j; continue; }
+    if (c === '(') depth++;
+    if (c === ')') depth--;
+    if (c === sep && depth === 0) { out.push(cur); cur = ''; continue; }
+    cur += c;
+  }
+  out.push(cur);
+  return out;
+}
+
+function awkAction(action) {
+  // Separa sentencias por ; o salto de línea, respetando llaves de if/for.
+  const stmts = [];
+  let cur = '';
+  let depth = 0;
+  for (let i = 0; i < action.length; i++) {
+    const c = action[i];
+    if (c === '"') { const j = action.indexOf('"', i + 1); cur += action.slice(i, j + 1); i = j; continue; }
+    if (c === '(') depth++;
+    if (c === ')') depth--;
+    if ((c === ';' || c === '\n') && depth === 0) { stmts.push(cur); cur = ''; continue; }
+    if ((c === '{' || c === '}') && depth === 0) { stmts.push(cur); stmts.push(c); cur = ''; continue; }
+    cur += c;
+  }
+  stmts.push(cur);
+  return stmts.map(st => {
+    const t = st.trim();
+    if (t === '{' || t === '}') return t;
+    const ifm = t.match(/^(if|while)\s*\((.*)\)\s*(.*)$/s);
+    if (ifm) return `${ifm[1]} (${awkExpr(ifm[2])}) ${ifm[3] ? '{' + awkStatement(ifm[3]) + '}' : ''}`;
+    if (t === 'else') return 'else';
+    return awkStatement(t);
+  }).join('\n');
+}
+
+function awk(argv, io) {
+  let fs = null;
+  let i = 0;
+  const assigns = {};
+  for (; i < argv.length; i++) {
+    if (argv[i] === '-F') { fs = argv[++i]; continue; }
+    if (argv[i].startsWith('-F')) { fs = argv[i].slice(2); continue; }
+    if (argv[i] === '-v') { const [k, v] = argv[++i].split('='); assigns[k] = v; continue; }
+    break;
+  }
+  const prog = argv[i];
+  const files = argv.slice(i + 1);
+  if (prog === undefined) { io.err('usage: awk [-F fs][-v var=value][prog | -f progfile][file ...]\n'); return 2; }
+  const rules = awkRules(prog);
+  const vars = { ...assigns, NR: 0, NF: 0, FS: fs ?? ' ', OFS: ' ' };
+  let fields = [''];
+  const num = v => (typeof v === 'string' && /^\s*-?\d+(\.\d+)?([eE][-+]?\d+)?\s*$/.test(v) ? Number(v) : v);
+  const out = [];
+  const helpers = {
+    __f: n => {
+      n = Number(n);
+      if (n === 0) return num(fields[0]);
+      return num(fields[n] ?? '');
+    },
+    __out: s => out.push(String(s)),
+    __sprintf: (fmt, ...vals) => awkSprintf(String(fmt), vals),
+    __cat: (...parts) => parts.join(''),
+    length: s => String(s ?? fields[0]).length,
+    toupper: s => String(s).toUpperCase(),
+    tolower: s => String(s).toLowerCase(),
+    substr: (s, a, b) => String(s).substr(Number(a) - 1, b === undefined ? undefined : Number(b)),
+    int: x => Math.trunc(Number(x)),
+    sqrt: x => Math.sqrt(Number(x)),
+  };
+  const env = new Proxy(vars, {
+    has: (t, k) => typeof k === 'string' && !k.startsWith('__') && !(k in helpers) && !['Math', 'String', 'Number', 'undefined', 'true', 'false'].includes(k),
+    get: (t, k) => (k === Symbol.unscopables ? undefined : k in t ? t[k] : 0),
+    set: (t, k, v) => { t[k] = v; return true; },
+  });
+  let compiled;
+  try {
+    compiled = rules.map(r => {
+      const kind = r.pattern === 'BEGIN' ? 'begin' : r.pattern === 'END' ? 'end' : 'main';
+      let cond = 'true';
+      if (kind === 'main' && r.pattern) {
+        cond = /^\/.*\/$/.test(r.pattern) ? `${r.pattern}.test(__f(0))` : awkExpr(r.pattern);
+      }
+      const body = r.action === null ? '__out(__f(0) + "\\n");' : awkAction(r.action);
+      // eslint-disable-next-line no-new-func
+      const fn = new Function('__env', '__h', `with (__h) { with (__env) { if (${cond}) { ${body} } } }`);
+      return { kind, fn };
+    });
+  } catch (e) {
+    io.err(`awk: syntax error in program\n awk: ${e.message}\n`);
+    return 2;
+  }
+  const run = kind => compiled.filter(c => c.kind === kind).forEach(c => c.fn(env, helpers));
+  try {
+    run('begin');
+    const { items, status } = readInputs(this, 'awk', files, io);
+    for (const it of items) {
+      for (const line of splitLines(it.text)) {
+        this.tick();
+        vars.NR++;
+        const parts = vars.FS === ' ' ? line.trim().split(/\s+/).filter(Boolean) : line.split(vars.FS);
+        fields = [line, ...parts];
+        vars.NF = parts.length;
+        helpers.NF = parts.length;
+        compiled.filter(c => c.kind === 'main').forEach(c => c.fn(env, helpers));
+      }
+    }
+    run('end');
+    io.out(out.join(''));
+    return status;
+  } catch (e) {
+    if (e instanceof StepLimit) throw e;
+    io.out(out.join(''));
+    io.err(`awk: ${e.message}\n`);
+    return 2;
+  }
 }
 
 export function completions(sh, partial, isFirst) {

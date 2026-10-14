@@ -1,6 +1,7 @@
 // Mundo inicial del servidor simulado: imita el servidor "ubuntu" de clase.
 import { mkDir, mkFile } from './vfs.js';
 import { REPO_FILES } from './data/repo.js';
+import { makePdb } from './data/pdb.js';
 
 export const REPO_URL = 'https://github.com/hperez-ucam/bioinformatica_26-27.git';
 export const REPO_NAME = 'bioinformatica_26-27';
@@ -11,47 +12,14 @@ export const BINARIES = [
   'head', 'hostname', 'id', 'less', 'ls', 'man', 'mkdir', 'more', 'mv', 'nano', 'ps', 'pwd',
   'python3', 'realpath', 'rm', 'rmdir', 'sed', 'seq', 'sort', 'sudo', 'tail', 'touch', 'uname',
   'uniq', 'vi', 'vim', 'wc', 'who', 'whoami', 'basename', 'dirname', 'cut', 'ssh', 'passwd', 'true', 'false',
+  'awk', 'which', 'timeout', 'tr',
 ];
+export const LOCAL_BINARIES = ['pdb_fetch', 'pdb_wc', 'freesasa'];
 
-// 1HVR.pdb sintético: mismas cifras que el real (1826 ATOM, 64 HETATM),
-// coordenadas inventadas. Se genera una vez y se reutiliza.
-let hvrCache = null;
+// 1HVR.pdb sintético: mismas cifras que el real (1826 ATOM con 326 hidrógenos,
+// 64 HETATM = 46 XK2 + 18 CSO), coordenadas inventadas.
 export function make1HVR() {
-  if (hvrCache) return hvrCache;
-  const res = ['PRO', 'GLN', 'ILE', 'THR', 'LEU', 'TRP', 'GLN', 'ARG', 'PRO', 'LEU', 'VAL', 'THR', 'ILE', 'LYS', 'ILE', 'GLY', 'GLY', 'GLN', 'LEU', 'LYS'];
-  const names = ['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'CE', 'NZ'];
-  const lines = [
-    'HEADER    HYDROLASE/HYDROLASE INHIBITOR           28-OCT-93   1HVR',
-    'TITLE     RATIONAL DESIGN OF POTENT, BIOAVAILABLE, NONPEPTIDE CYCLIC UREAS AS',
-    'TITLE    2 HIV PROTEASE INHIBITORS',
-    'COMPND    MOL_ID: 1;',
-    'COMPND   2 MOLECULE: HIV-1 PROTEASE;',
-    'REMARK   1 ESTE FICHERO ES UNA COPIA SINTETICA PARA DR.XINXUS:',
-    'REMARK   1 MISMO NUMERO DE LINEAS ATOM (1826) Y HETATM (64) QUE EL ORIGINAL.',
-  ];
-  const fmt = (rec, serial, name, resName, chain, resSeq, el) => {
-    const x = (Math.sin(serial) * 20).toFixed(3).padStart(8);
-    const y = (Math.cos(serial * 1.3) * 20).toFixed(3).padStart(8);
-    const z = (Math.sin(serial * 0.7) * 20).toFixed(3).padStart(8);
-    const nm = name.length < 4 ? ' ' + name.padEnd(3) : name;
-    return `${rec.padEnd(6)}${String(serial).padStart(5)} ${nm} ${resName} ${chain}${String(resSeq).padStart(4)}    ${x}${y}${z}  1.00 20.00           ${el}`;
-  };
-  let serial = 1;
-  for (let i = 0; i < 1826; i++) {
-    const resSeq = Math.floor(i / 9.2) + 1;
-    const chain = resSeq <= 99 ? 'A' : 'B';
-    const name = names[i % names.length];
-    lines.push(fmt('ATOM', serial++, name, res[resSeq % res.length], chain, ((resSeq - 1) % 99) + 1, name[0]));
-  }
-  lines.push('TER    1827      PHE B  99');
-  serial = 1828;
-  for (let i = 0; i < 64; i++) {
-    const het = i < 46 ? 'XK2' : 'HOH';
-    lines.push(fmt('HETATM', serial++, i < 46 ? 'C' + (i % 9 + 1) : 'O', het, 'A', i < 46 ? 100 : 200 + i, i < 46 ? 'C' : 'O'));
-  }
-  lines.push('END');
-  hvrCache = lines.join('\n') + '\n';
-  return hvrCache;
+  return makePdb('1hvr');
 }
 
 function writeTree(base, relPath, node) {
@@ -105,6 +73,10 @@ export function buildWorld(fs, user, opts = {}) {
     r.children.bin.children[b] = node;
     usr.children.bin.children[b] = { ...node };
   }
+  // Programas del Tema 1C, instalados aparte (which los encuentra en /usr/local/bin).
+  for (const b of LOCAL_BINARIES) {
+    usr.children.local.children.bin.children[b] = mkFile('', 'root', 0o755, { bin: b, size: 52000 + b.length * 911 });
+  }
   r.children.var.children.log = mkDir('root');
   const etc = r.children.etc;
   etc.children.hostname = mkFile('ubuntu\n');
@@ -127,4 +99,5 @@ export function buildWorld(fs, user, opts = {}) {
   me.children['.bash_logout'] = mkFile('# ~/.bash_logout\n', user);
   if (repo) me.children[REPO_NAME] = buildRepo(user);
   if (trabajo) me.children['trabajo-1a'] = buildTrabajo(user);
+  if (opts.trabajo1c) me.children['trabajo-1c'] = mkDir(user, 0o775);
 }

@@ -1,5 +1,6 @@
 // Progreso del jugador, guardado en el móvil (localStorage).
-const KEY = 'drxinxus.v1';
+// v2 (oct. 2026): temario reordenado con los temas 1B y 1C; el progreso empieza de cero.
+const KEY = 'drxinxus.v2';
 export const MAX_HEARTS = 5;
 export const HEART_REFILL_MS = 20 * 60 * 1000; // una vida cada 20 minutos
 
@@ -161,6 +162,16 @@ export function completeLesson(lessonId, { errors, practice }) {
   const streakUp = touchStreak();
   save();
   return { xp, perfect, first, streakUp };
+}
+
+export function completeExam(correct, total, grade) {
+  const xp = correct;
+  addXP(xp);
+  state.stats.exams = (state.stats.exams || 0) + 1;
+  state.stats.examBest = Math.max(state.stats.examBest ?? 0, grade);
+  const streakUp = touchStreak();
+  save();
+  return { xp, streakUp };
 }
 
 export function setProfile(nick, clase) {

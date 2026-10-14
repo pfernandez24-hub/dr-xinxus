@@ -10,7 +10,7 @@ const PRAISE = ['¡Bien hecho!', '¡Correcto!', '¡Genial!', '¡Así se hace!', 
 const pick = a => a[Math.floor(Math.random() * a.length)];
 
 const TYPE_LABEL = {
-  info: 'Nuevo concepto', mc: 'Elige la respuesta', fill: 'Completa la orden', order: 'Monta la orden',
+  info: 'Nuevo concepto', mc: 'Elige la respuesta', vf: 'Verdadero o falso · Tarea 1D', fill: 'Completa la orden', order: 'Monta la orden',
   bug: 'Encuentra el error', term: 'En la terminal',
 };
 
@@ -34,10 +34,12 @@ function renderInfo(ex) {
 
 function renderMC(ex, ctl) {
   let selected = null;
-  const buttons = ex.options.map((opt, i) => h('button', {
+  // Las opciones se barajan cada vez, como en un examen: no vale memorizar la posición.
+  const order = shuffle(ex.options.map((_, i) => i));
+  const buttons = order.map((orig, i) => h('button', {
     type: 'button', class: 'option',
     onclick: () => select(i),
-  }, h('span', { class: 'option-key' }, String(i + 1)), h('span', { class: 'option-text', html: rich(opt) })));
+  }, h('span', { class: 'option-key' }, 'abcdefgh'[i]), h('span', { class: 'option-text', html: rich(ex.options[orig]) })));
   function select(i) {
     if (ctl.locked) return;
     selected = i;
@@ -50,12 +52,52 @@ function renderMC(ex, ctl) {
       h('h2', { class: 'ex-q', html: rich(ex.q) }),
       ex.code ? codeBlock(ex.code) : null,
       h('div', { class: 'options' }, buttons)),
-    key: k => { const n = Number(k); if (n >= 1 && n <= buttons.length) select(n - 1); },
+    key: k => {
+      const n = /^[1-9]$/.test(k) ? Number(k) : 'abcdefgh'.indexOf(k.toLowerCase()) + 1;
+      if (n >= 1 && n <= buttons.length) select(n - 1);
+    },
     check: () => {
-      const ok = selected === ex.answer;
-      buttons[ex.answer].classList.add('right');
+      const right = order.indexOf(ex.answer);
+      const ok = selected === right;
+      buttons[right].classList.add('right');
       if (!ok) buttons[selected].classList.add('wrong');
       return { ok, correct: ex.options[ex.answer] };
+    },
+  };
+}
+
+// Pregunta de examen: cinco afirmaciones V/F y elegir la combinación a)–e).
+function renderVF(ex, ctl) {
+  let selected = null;
+  const letters = 'abcde';
+  const buttons = ex.options.map((combo, i) => h('button', {
+    type: 'button', class: 'option vf-option',
+    onclick: () => {
+      if (ctl.locked) return;
+      selected = i;
+      buttons.forEach((b, k) => b.classList.toggle('selected', k === i));
+      play('tap');
+      ctl.setReady(true);
+    },
+  }, h('span', { class: 'option-key' }, letters[i]), h('span', { class: 'option-text mono vf-combo' }, combo.split('').join(' '))));
+  return {
+    el: h('div', { class: 'ex' },
+      h('h2', { class: 'ex-q', html: rich(ex.q) }),
+      ex.code ? codeBlock(ex.code) : null,
+      h('ol', { class: 'vf-list' }, ex.statements.map(s => h('li', { html: rich(s) }))),
+      h('p', { class: 'muted small vf-help' }, 'Decide si cada afirmación es verdadera (V) o falsa (F) y elige la combinación.'),
+      h('div', { class: 'options vf-options' }, buttons)),
+    key: k => { const n = 'abcde'.indexOf(k.toLowerCase()) + 1 || Number(k); if (n >= 1 && n <= 5) buttons[n - 1].click(); },
+    check: () => {
+      const answer = ex.options.indexOf(ex.truth);
+      const ok = selected === answer;
+      buttons[answer].classList.add('right');
+      if (!ok) buttons[selected].classList.add('wrong');
+      return {
+        ok,
+        correct: `${letters[answer]}) ${ex.truth.split('').join(' ')}`,
+        explainList: ex.statements.map((s, i) => `**${i + 1} ${ex.truth[i]}** · ${ex.why?.[i] || ''}`),
+      };
     },
   };
 }
@@ -197,11 +239,11 @@ function renderTerm(ex, ctl) {
   };
 }
 
-const RENDER = { info: renderInfo, mc: renderMC, fill: renderFill, order: renderOrder, bug: renderBug, term: renderTerm };
+const RENDER = { info: renderInfo, mc: renderMC, vf: renderVF, fill: renderFill, order: renderOrder, bug: renderBug, term: renderTerm };
 
 // ---------- Lección ----------
 
-export function runLesson(root, { lesson, exercises, practice, onExit, onFinish }) {
+export function runLesson(root, { lesson, exercises, practice, exam, onExit, onFinish }) {
   const queue = exercises.map((ex, i) => ({ ex, id: i }));
   const total = exercises.length;
   const retried = new Set();
@@ -227,7 +269,7 @@ export function runLesson(root, { lesson, exercises, practice, onExit, onFinish 
   function updateTop() {
     bar.style.width = `${Math.round((solved / total) * 100)}%`;
     const n = store.get().hearts.n;
-    heartsEl.replaceChildren(practice ? h('span', { class: 'heart-inf', title: 'Repaso: sin vidas' }, '❤️ ∞') : h('span', {}, `❤️ ${n}`));
+    heartsEl.replaceChildren(exam ? h('span', { title: 'Simulacro' }, `📝 ${Math.min(pos + 1, total)}/${total}`) : practice ? h('span', { class: 'heart-inf', title: 'Repaso: sin vidas' }, '❤️ ∞') : h('span', {}, `❤️ ${n}`));
   }
 
   function confirmExit() {
@@ -240,7 +282,7 @@ export function runLesson(root, { lesson, exercises, practice, onExit, onFinish 
     if (e.key === 'Enter') {
       const btn = footer.querySelector('.btn-main:not([disabled])');
       if (btn) { e.preventDefault(); btn.click(); }
-    } else if (current?.key && /^[1-9]$/.test(e.key)) current.key(e.key);
+    } else if (current?.key && /^[1-9a-e]$/i.test(e.key)) current.key(e.key);
   }
   document.addEventListener('keydown', keyHandler);
   const cleanup = () => document.removeEventListener('keydown', keyHandler);
@@ -295,8 +337,8 @@ export function runLesson(root, { lesson, exercises, practice, onExit, onFinish 
       } else {
         errors++;
         play('bad');
-        if (!practice && store.loseHeart() <= 0) outOfHearts = true;
-        if (!retried.has(item.id)) { retried.add(item.id); queue.push(item); }
+        if (!practice && !exam && store.loseHeart() <= 0) outOfHearts = true;
+        if (!exam && !retried.has(item.id)) { retried.add(item.id); queue.push(item); }
         else { solved++; }
       }
       store.save();
@@ -311,7 +353,8 @@ export function runLesson(root, { lesson, exercises, practice, onExit, onFinish 
           h('div', { class: 'feedback-text' },
             h('strong', {}, result.ok ? pick(PRAISE) : 'Respuesta correcta:'),
             !result.ok && result.correct ? h('div', { class: 'feedback-correct' + (['fill', 'order', 'term', 'bug'].includes(item.ex.type) ? ' mono' : ''), html: rich(result.correct) }) : null,
-            explain ? h('p', { html: rich(explain) }) : null)),
+            explain ? h('p', { html: rich(explain) }) : null,
+            result.explainList ? h('ul', { class: 'vf-why' }, result.explainList.map(t => h('li', { html: rich(t) }))) : null)),
         cont);
       setTimeout(() => cont.focus({ preventScroll: true }), 50);
     }

@@ -1,19 +1,26 @@
 # Dr.Xinxus 🐧
 
-App estilo Duolingo para aprender Linux y bash con el temario de **Bioinformática (Tema 1A, UCAM 2026/27)**.
+App estilo Duolingo para aprender Linux y bash con el temario de **Bioinformática, Tema 1 (1A, 1B y 1C), UCAM 2026/27**.
 Es una *web app instalable*: se abre con un enlace y se añade a la pantalla de inicio del iPhone o del Android.
 No pasa por la App Store y es gratis.
 
 ## Qué incluye
 
-- **13 unidades y 24 lecciones**: conexión por ssh y MobaXterm, rutas, ficheros, vi y nano, Git del curso,
-  redirección y tuberías, procesos, permisos, variables y parámetros, if/case, bucles, depuración y el reto de los PDB.
-- **6 tipos de ejercicio**: teoría, opción múltiple, completar el hueco, ordenar fichas, encontrar el error
-  y **terminal simulada**.
+- **6 secciones, 36 unidades y 47 lecciones**, de lo más fácil a lo más difícil:
+  1. Primeros pasos (1A): terminal, ssh, ls, rutas, ficheros, more/less/man, vi y nano, FileZilla, Git.
+  2. Combinar órdenes (1A): redirección, tuberías, grep, cut/sort/uniq, awk, procesos.
+  3. Scripts (1A): permisos, primer script, variables, parámetros, if, case, for, while, depuración y el reto de los PDB.
+  4. IA con criterio (1B): modelos de lenguaje, prompt anclado, verificar propuestas, consultas con datos, órdenes peligrosas.
+  5. Bioinformática estructural (1C): pdb_fetch, pdb_wc, freesasa, SASA residuo a residuo, recuentos y lotes.
+  6. Repaso de examen: tests de opción múltiple por tema.
+- **Simulacro de examen**: 20 preguntas tipo test al azar de todo el temario, con las opciones barajadas y nota sobre 10.
+- **7 tipos de ejercicio**: teoría, opción múltiple, V/F de la Tarea 1D, completar el hueco, ordenar fichas,
+  encontrar el error y **terminal simulada**.
 - **Terminal Ubuntu simulada**: un intérprete de bash propio (if, for, while, case, tuberías, `>`, permisos,
-  `git clone/pull/stash`, `curl`, vi/nano...) con el repositorio de clase dentro. Los scripts del profesor
-  (`00b-contar-atom.sh`, `12-errores.sh`, `13-crlf.sh`...) dan los mismos mensajes que en el servidor.
-- **Gamificación**: XP, meta diaria, racha, 5 vidas (una cada 20 min o con un repaso), 22 logros,
+  `git clone/pull/stash`, `curl`, `awk`, vi/nano...) con el repositorio de clase dentro, y `pdb_fetch`, `pdb_wc`
+  y `freesasa` con las cifras reales de clase (1crn, 1hvr, 1ake y las 10 proteínas de la Tarea 1C2). Los scripts
+  del profesor (`00b-contar-atom.sh`, `12-errores.sh`, `13-crlf.sh`...) dan los mismos mensajes que en el servidor.
+- **Gamificación**: XP, meta diaria, racha, 5 vidas (una cada 20 min o con un repaso), 26 logros,
   ranking semanal y total por código de clase y recordatorio diario mediante el calendario del móvil.
 - Funciona **sin conexión** una vez abierta, gracias al service worker.
 

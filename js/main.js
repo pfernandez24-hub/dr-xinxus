@@ -1,6 +1,6 @@
 // Dr.Xinxus: pantallas y navegación.
 import { h, rich, shuffle } from './dom.js';
-import { UNITS, LESSONS, lessonById } from './content.js';
+import { UNITS, LESSONS, SECTIONS, EXAM_POOL } from './content.js';
 import * as store from './store.js';
 import { mascot } from './mascot.js';
 import { runLesson } from './lesson.js';
@@ -128,7 +128,7 @@ function learnView() {
   const curLesson = LESSONS[cur];
   const greet = s.daily.xp >= s.goal
     ? '¡Meta de hoy cumplida! Lo que hagas ahora es extra. 🎉'
-    : curLesson ? `Hoy toca: ${curLesson.title}.` : '¡Has terminado el Tema 1A! Repasa para no oxidarte.';
+    : curLesson ? `Hoy toca: ${curLesson.unit.title} · ${curLesson.title}${/[?!.]$/.test(curLesson.title) ? "" : "."}` : '¡Has terminado todo el Tema 1! Haz simulacros para el examen.';
 
   const banners = [];
   if (isIOS() && !isStandalone()) {
@@ -147,8 +147,19 @@ function learnView() {
         h('div', { class: 'progress small' }, h('div', { class: 'progress-fill', style: { width: goalPct + '%' } })))),
     Object.keys(s.done).length ? h('button', { type: 'button', class: 'btn btn-small', onclick: () => startPractice() }, '🔁 Repaso') : null);
 
+  const best = s.stats.examBest;
+  const exam = h('section', { class: 'exam-card' },
+    h('div', { class: 'exam-icon', 'aria-hidden': 'true' }, '📝'),
+    h('div', { class: 'exam-body' },
+      h('strong', {}, 'Simulacro de examen'),
+      h('div', { class: 'muted small' }, `${EXAM_SIZE} preguntas tipo test de todo el Tema 1, con las opciones barajadas.` + (best !== undefined ? ` Mejor nota: ${best.toFixed(1)}.` : ''))),
+    h('button', { type: 'button', class: 'btn btn-small btn-main', onclick: () => startExam() }, 'Empezar'));
+
   let idx = 0;
+  let lastSection = null;
   const units = UNITS.map((u, ui) => {
+    const sec = u.section !== lastSection ? SECTIONS.find(x => x.id === u.section) : null;
+    lastSection = u.section;
     const nodes = u.lessons.map((l, li) => {
       const i = idx++;
       const done = !!s.done[l.id];
@@ -168,14 +179,15 @@ function learnView() {
         h('div', { class: 'node-label' }, l.title));
     });
     return h('section', { class: 'unit' },
+      sec ? h('div', { class: 'section-head' }, h('span', { class: 'section-num' }, `Sección ${SECTIONS.indexOf(sec) + 1}`), h('h2', {}, sec.title), h('p', { class: 'muted small' }, sec.desc)) : null,
       h('div', { class: `unit-head color-${u.color}` },
         h('div', {}, h('div', { class: 'unit-kicker' }, `Unidad ${ui + 1}`), h('h2', {}, u.title), h('p', {}, u.desc)),
         h('span', { class: 'unit-icon', 'aria-hidden': 'true' }, u.icon)),
       h('div', { class: 'path' }, nodes));
   });
 
-  return h('div', { class: 'learn' }, banners, hello, units,
-    h('p', { class: 'footnote muted small' }, 'Temario: Tema 1A · Bioinformática · Grado en Biotecnología, UCAM 2026/27.'));
+  return h('div', { class: 'learn' }, banners, hello, exam, units,
+    h('p', { class: 'footnote muted small' }, 'Temario: Tema 1 (1A, 1B y 1C) · Bioinformática · Grado en Biotecnología, UCAM 2026/27.'));
 }
 
 function openLessonSheet(lesson, unit, done) {
@@ -221,6 +233,44 @@ function startPractice() {
     onExit: () => render(),
     onFinish: r => finishScreen(lesson, r, true),
   });
+}
+
+// ---------- Simulacro de examen (tipo test) ----------
+
+const EXAM_SIZE = 20;
+
+function startExam() {
+  const picked = shuffle(EXAM_POOL).slice(0, EXAM_SIZE);
+  runLesson(app, {
+    lesson: { id: 'simulacro', title: 'Simulacro' },
+    exercises: picked,
+    exam: true,
+    onExit: () => render(),
+    onFinish: r => examFinish(r),
+  });
+}
+
+function examFinish(r) {
+  const correct = r.total - r.errors;
+  const grade = Math.round((correct / r.total) * 100) / 10;
+  const result = store.completeExam(correct, r.total, grade);
+  play('finish');
+  pushScore();
+  const newAch = checkAchievements();
+  const verdict = grade >= 9 ? '¡Sobresaliente!' : grade >= 7 ? '¡Notable!' : grade >= 5 ? 'Aprobado' : 'Toca repasar';
+  app.replaceChildren(h('div', { class: 'center-screen finish' },
+    h('div', { class: 'bounce', html: mascot(grade >= 5 ? (grade >= 9 ? 'wow' : 'happy') : 'sad', 140) }),
+    h('h1', {}, verdict),
+    h('div', { class: 'exam-grade' }, grade.toFixed(1)),
+    h('div', { class: 'result-grid' },
+      h('div', { class: 'result green' }, h('div', { class: 'result-label' }, 'Aciertos'), h('div', { class: 'result-val' }, `${correct}/${r.total}`)),
+      h('div', { class: 'result yellow' }, h('div', { class: 'result-label' }, 'XP'), h('div', { class: 'result-val' }, `+${result.xp}`)),
+      h('div', { class: 'result blue' }, h('div', { class: 'result-label' }, 'Tiempo'), h('div', { class: 'result-val' }, fmtTime(r.ms)))),
+    h('p', { class: 'muted small' }, 'Nota sobre 10, sin restar por fallo. Se ajustará al formato de la convocatoria.'),
+    result.streakUp ? h('div', { class: 'streak-up' }, `🔥 ¡Racha de ${store.get().streak.count} ${store.get().streak.count === 1 ? 'día' : 'días'}!`) : null,
+    newAch.length ? h('div', { class: 'ach-new' }, newAch.map(a => h('div', { class: 'ach-pill' }, `${a.icon} ${a.title}`))) : null,
+    h('button', { type: 'button', class: 'btn btn-main', onclick: () => startExam() }, 'Otro simulacro'),
+    h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => { tab = 'learn'; render(); } }, 'Volver')));
 }
 
 function finishScreen(lesson, r, practice) {

@@ -249,6 +249,7 @@ export function runLesson(root, { lesson, exercises, practice, exam, onExit, onF
   const retried = new Set();
   let solved = 0;
   let errors = 0;
+  let blanks = 0;
   let pos = 0;
   const started = Date.now();
   let current = null;
@@ -291,7 +292,7 @@ export function runLesson(root, { lesson, exercises, practice, exam, onExit, onF
     if (outOfHearts) { cleanup(); showNoHearts(); return; }
     if (pos >= queue.length) {
       cleanup();
-      onFinish({ errors, total, ms: Date.now() - started });
+      onFinish({ errors, blanks, total, ms: Date.now() - started });
       return;
     }
     const item = queue[pos];
@@ -320,6 +321,12 @@ export function runLesson(root, { lesson, exercises, practice, exam, onExit, onF
         h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => view.hint() }, 'Pista'),
         h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => resolve(view.giveUp()) }, 'No lo sé'),
       );
+    } else if (exam) {
+      // Como en el parcial: se puede dejar en blanco (0 puntos) en vez de arriesgar (−0,25).
+      mainBtn.onclick = () => resolve(view.check());
+      footer.replaceChildren(
+        h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => resolve({ blank: true }) }, 'En blanco'),
+        mainBtn);
     } else {
       mainBtn.onclick = () => resolve(view.check());
       footer.replaceChildren(mainBtn);
@@ -328,6 +335,14 @@ export function runLesson(root, { lesson, exercises, practice, exam, onExit, onF
     function resolve(result) {
       if (ctl.locked) return;
       ctl.locked = true;
+      if (result.blank) {
+        blanks++;
+        solved++;
+        pos++;
+        updateTop();
+        next();
+        return;
+      }
       store.bumpStat('exercises');
       if (result.ok) {
         store.bumpStat('correct');

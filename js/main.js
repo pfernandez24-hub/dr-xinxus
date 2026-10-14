@@ -29,6 +29,8 @@ function announceAchievements() {
   }
 }
 
+const fmtGrade = g => g.toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
 function fmtTime(ms) {
   const s = Math.round(ms / 1000);
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -128,7 +130,7 @@ function learnView() {
   const curLesson = LESSONS[cur];
   const greet = s.daily.xp >= s.goal
     ? '¡Meta de hoy cumplida! Lo que hagas ahora es extra. 🎉'
-    : curLesson ? `Hoy toca: ${curLesson.unit.title} · ${curLesson.title}${/[?!.]$/.test(curLesson.title) ? "" : "."}` : '¡Has terminado todo el Tema 1! Haz simulacros para el examen.';
+    : curLesson ? `Hoy toca: ${curLesson.unit.title} · ${curLesson.title}${/[?!.]$/.test(curLesson.title) ? "" : "."}` : '¡Has terminado todo el temario del parcial! Haz simulacros.';
 
   const banners = [];
   if (isIOS() && !isStandalone()) {
@@ -152,7 +154,7 @@ function learnView() {
     h('div', { class: 'exam-icon', 'aria-hidden': 'true' }, '📝'),
     h('div', { class: 'exam-body' },
       h('strong', {}, 'Simulacro de examen'),
-      h('div', { class: 'muted small' }, `${EXAM_SIZE} preguntas tipo test de todo el Tema 1, con las opciones barajadas.` + (best !== undefined ? ` Mejor nota: ${best.toFixed(1)}.` : ''))),
+      h('div', { class: 'muted small' }, `${EXAM_SIZE} preguntas de 5 opciones (Temas 0 y 1). Acierto +1, error −0,25, en blanco 0.` + (best !== undefined ? ` Mejor nota: ${fmtGrade(best)}.` : ''))),
     h('button', { type: 'button', class: 'btn btn-small btn-main', onclick: () => startExam() }, 'Empezar'));
 
   let idx = 0;
@@ -179,7 +181,7 @@ function learnView() {
         h('div', { class: 'node-label' }, l.title));
     });
     return h('section', { class: 'unit' },
-      sec ? h('div', { class: 'section-head' }, h('span', { class: 'section-num' }, `Sección ${SECTIONS.indexOf(sec) + 1}`), h('h2', {}, sec.title), h('p', { class: 'muted small' }, sec.desc)) : null,
+      sec ? h('div', { class: 'section-head' }, h('span', { class: 'section-num' }, `Sección ${SECTIONS.indexOf(sec)}`), h('h2', {}, sec.title), h('p', { class: 'muted small' }, sec.desc)) : null,
       h('div', { class: `unit-head color-${u.color}` },
         h('div', {}, h('div', { class: 'unit-kicker' }, `Unidad ${ui + 1}`), h('h2', {}, u.title), h('p', {}, u.desc)),
         h('span', { class: 'unit-icon', 'aria-hidden': 'true' }, u.icon)),
@@ -187,7 +189,7 @@ function learnView() {
   });
 
   return h('div', { class: 'learn' }, banners, hello, exam, units,
-    h('p', { class: 'footnote muted small' }, 'Temario: Tema 1 (1A, 1B y 1C) · Bioinformática · Grado en Biotecnología, UCAM 2026/27.'));
+    h('p', { class: 'footnote muted small' }, 'Temario del primer parcial (21/10/2026): Temas 0 y 1 · Bioinformática · Grado en Biotecnología, UCAM 2026/27.'));
 }
 
 function openLessonSheet(lesson, unit, done) {
@@ -201,6 +203,7 @@ function openLessonSheet(lesson, unit, done) {
       h('div', { class: 'sheet-kicker' }, unit.title),
       h('h2', {}, lesson.title),
       h('p', { class: 'muted' }, `${n} ejercicios · ${terms} en la terminal`),
+      lesson.noExam ? h('p', { class: 'warn-text' }, `ℹ ${lesson.noExam}`) : null,
       noHearts ? h('p', { class: 'warn-text' }, `Sin vidas. La próxima llega en ${Math.ceil(store.msToNextHeart() / 60000)} min, o gánala con un repaso.`) : null,
       h('button', {
         type: 'button', class: 'btn btn-main', onclick: () => { close(); noHearts ? startPractice() : startLesson(lesson, { replay: done }); },
@@ -251,8 +254,10 @@ function startExam() {
 }
 
 function examFinish(r) {
-  const correct = r.total - r.errors;
-  const grade = Math.round((correct / r.total) * 100) / 10;
+  // Puntuación de la convocatoria: +1 acierto, −0,25 error, 0 en blanco.
+  const correct = r.total - r.errors - r.blanks;
+  const points = correct - r.errors * 0.25;
+  const grade = Math.max(0, Math.round((points / r.total) * 100) / 10);
   const result = store.completeExam(correct, r.total, grade);
   play('finish');
   pushScore();
@@ -261,12 +266,12 @@ function examFinish(r) {
   app.replaceChildren(h('div', { class: 'center-screen finish' },
     h('div', { class: 'bounce', html: mascot(grade >= 5 ? (grade >= 9 ? 'wow' : 'happy') : 'sad', 140) }),
     h('h1', {}, verdict),
-    h('div', { class: 'exam-grade' }, grade.toFixed(1)),
+    h('div', { class: 'exam-grade' }, fmtGrade(grade)),
     h('div', { class: 'result-grid' },
-      h('div', { class: 'result green' }, h('div', { class: 'result-label' }, 'Aciertos'), h('div', { class: 'result-val' }, `${correct}/${r.total}`)),
-      h('div', { class: 'result yellow' }, h('div', { class: 'result-label' }, 'XP'), h('div', { class: 'result-val' }, `+${result.xp}`)),
-      h('div', { class: 'result blue' }, h('div', { class: 'result-label' }, 'Tiempo'), h('div', { class: 'result-val' }, fmtTime(r.ms)))),
-    h('p', { class: 'muted small' }, 'Nota sobre 10, sin restar por fallo. Se ajustará al formato de la convocatoria.'),
+      h('div', { class: 'result green' }, h('div', { class: 'result-label' }, 'Aciertos'), h('div', { class: 'result-val' }, `${correct}`)),
+      h('div', { class: 'result red' }, h('div', { class: 'result-label' }, 'Errores'), h('div', { class: 'result-val' }, `${r.errors}`)),
+      h('div', { class: 'result blue' }, h('div', { class: 'result-label' }, 'En blanco'), h('div', { class: 'result-val' }, `${r.blanks}`))),
+    h('p', { class: 'muted small' }, `${correct} − ${r.errors} × 0,25 = ${points.toLocaleString('es-ES')} puntos de ${r.total} · ${fmtTime(r.ms)} · +${result.xp} XP`),
     result.streakUp ? h('div', { class: 'streak-up' }, `🔥 ¡Racha de ${store.get().streak.count} ${store.get().streak.count === 1 ? 'día' : 'días'}!`) : null,
     newAch.length ? h('div', { class: 'ach-new' }, newAch.map(a => h('div', { class: 'ach-pill' }, `${a.icon} ${a.title}`))) : null,
     h('button', { type: 'button', class: 'btn btn-main', onclick: () => startExam() }, 'Otro simulacro'),

@@ -1,19 +1,22 @@
 # Dr.Xinxus 🐧
 
-App estilo Duolingo para aprender Linux y bash con el temario de **Bioinformática, Tema 1 (1A, 1B y 1C), UCAM 2026/27**.
+App estilo Duolingo para aprender Linux y bash con el temario del primer parcial de **Bioinformática (Temas 0 y 1), UCAM 2026/27**.
 Es una *web app instalable*: se abre con un enlace y se añade a la pantalla de inicio del iPhone o del Android.
 No pasa por la App Store y es gratis.
 
 ## Qué incluye
 
-- **6 secciones, 36 unidades y 47 lecciones**, de lo más fácil a lo más difícil:
+- **7 secciones, 41 unidades y 55 lecciones**, de lo más fácil a lo más difícil:
+  0. Presentación (Tema 0): asignatura, evaluación, definiciones, temario y la convocatoria del parcial.
   1. Primeros pasos (1A): terminal, ssh, ls, rutas, ficheros, more/less/man, vi y nano, FileZilla, Git.
   2. Combinar órdenes (1A): redirección, tuberías, grep, cut/sort/uniq, awk, procesos.
   3. Scripts (1A): permisos, primer script, variables, parámetros, if, case, for, while, depuración y el reto de los PDB.
   4. IA con criterio (1B): modelos de lenguaje, prompt anclado, verificar propuestas, consultas con datos, órdenes peligrosas.
   5. Bioinformática estructural (1C): pdb_fetch, pdb_wc, freesasa, SASA residuo a residuo, recuentos y lotes.
-  6. Repaso de examen: tests de opción múltiple por tema.
-- **Simulacro de examen**: 20 preguntas tipo test al azar de todo el temario, con las opciones barajadas y nota sobre 10.
+  6. Repaso de examen: tests de 5 opciones por tema y preguntas al estilo de la Tarea 1D.
+- **Simulacro de examen** con el formato de la convocatoria: 20 preguntas de 5 opciones al azar (banco de 79),
+  opciones barajadas, se puede dejar en blanco; acierto +1, error −0,25, en blanco 0; nota sobre 10.
+- Lo que sale de los documentos **Extra** (vi detallado) está marcado: no entra en el examen.
 - **7 tipos de ejercicio**: teoría, opción múltiple, V/F de la Tarea 1D, completar el hueco, ordenar fichas,
   encontrar el error y **terminal simulada**.
 - **Terminal Ubuntu simulada**: un intérprete de bash propio (if, for, while, case, tuberías, `>`, permisos,

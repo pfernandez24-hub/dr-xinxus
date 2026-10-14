@@ -431,7 +431,7 @@ p code, .info-text code, .ex-q code, .option-text code, .feedback-text code, .bu
 /* ---------- Resultados ---------- */
 .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 380px; margin: 14px 0; }
 .result { border-radius: 14px; border: 2px solid var(--c); overflow: hidden; }
-.result.yellow { --c: var(--yellow); } .result.green { --c: var(--green); } .result.blue { --c: var(--blue); }
+.result.yellow { --c: var(--yellow); } .result.green { --c: var(--green); } .result.blue { --c: var(--blue); } .result.red { --c: var(--red); }
 .result-label { background: var(--c); color: #10202c; font-weight: 900; font-size: .72rem; text-transform: uppercase; padding: 4px; letter-spacing: .05em; }
 .result-val { font-size: 1.4rem; font-weight: 900; padding: 10px 4px; }
 .streak-up { font-size: 1.15rem; font-weight: 800; color: var(--orange); margin: 4px 0; animation: pop .4s ease-out; }

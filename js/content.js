@@ -1,5 +1,5 @@
-// Temario de Dr.Xinxus — Bioinformática, Tema 1 (1A Linux y scripts, 1B IA con criterio,
-// 1C mini-aplicaciones estructurales). Grado en Biotecnología, UCAM 2026/27.
+// Temario de Dr.Xinxus — Bioinformática, Temas 0 (presentación) y 1 (1A Linux y scripts,
+// 1B IA con criterio, 1C mini-aplicaciones estructurales): lo que entra en el primer parcial. Grado en Biotecnología, UCAM 2026/27.
 // Basado en las diapositivas del profesor, la chuleta, el extra de vi, el repositorio de clase
 // y las tareas entregadas (tarea2, 1A2, 1B, 1C, 1C2 y 1D).
 //
@@ -205,15 +205,99 @@ export const T1D = {
 // ─────────────────────────────────────────── TEMARIO ───────────────────────────────────────────
 
 export const SECTIONS = [
+  { id: 's0', title: 'Presentación', desc: 'Tema 0 · asignatura, definiciones y el parcial' },
   { id: 's1', title: 'Primeros pasos', desc: 'Tema 1A · conectarse, moverse y manejar ficheros' },
   { id: 's2', title: 'Combinar órdenes', desc: 'Tema 1A · redirección, tuberías y filtros' },
   { id: 's3', title: 'Scripts de bash', desc: 'Tema 1A · permisos, variables, condiciones y bucles' },
   { id: 's4', title: 'IA con criterio', desc: 'Tema 1B · preguntar con datos y comprobar' },
   { id: 's5', title: 'Bioinformática estructural', desc: 'Tema 1C · pdb_fetch, pdb_wc y FreeSASA' },
-  { id: 's6', title: 'Repaso de examen', desc: 'Preguntas tipo test, como en el examen' },
+  { id: 's6', title: 'Repaso de examen', desc: 'Tests de 5 opciones, como en el parcial' },
 ];
 
 export const UNITS = [
+  // ═════════════════════════════════ SECCIÓN 0 · TEMA 0 ═════════════════════════════════
+  {
+    id: 'tema0', section: 's0', title: 'La asignatura', icon: '🎒', color: 'yellow',
+    desc: 'Profesorado, clases, evaluación y parcial.',
+    lessons: [
+      {
+        title: 'Cómo funciona Bioinformática',
+        exercises: [
+          { type: 'info', title: 'Profesorado y clases', text: '**Dr. Horacio E. Pérez Sánchez** (hperez@ucam.edu), investigador principal del grupo **BIO-HPC** de la UCAM. **Dr. Sergio Navarro Sánchez** y **Jorge R. Alonso Fernández**, que lleva las **prácticas**.\n\nClases teóricas participativas, **clases invertidas**, ejercicios y tareas frecuentes (con nota), trabajo individual y en grupo, exposición en clase y uso de portátil.' },
+          { type: 'mc', q: '¿Quién está a cargo de las prácticas?', options: ['Horacio Pérez Sánchez', 'Jorge R. Alonso Fernández', 'Sergio Navarro Sánchez', 'Nadie: no hay prácticas'], answer: 1, explain: 'Su calendario ya está publicado.' },
+          { type: 'info', title: 'Evaluación', text: '**70 %** pruebas teóricas: exámenes con cuestiones teórico-prácticas y supuestos.\n**20 %** pruebas prácticas: prácticas y seminarios. **Asistencia obligatoria** a todas.\n**10 %** tutorías académicas: participación en foros, chats, videoconferencias, autoevaluaciones, actividades y debates.\n\nSuperar las prácticas (**mínimo 5**) y asistir a ellas es requisito para aprobar.' },
+          { type: 'mc', q: '¿Cuánto pesan las pruebas teóricas en la nota final?', options: ['10 %', '20 %', '50 %', '70 %'], answer: 3, explain: '70 % teoría, 20 % prácticas, 10 % tutorías.' },
+          { type: 'mc', q: 'La participación en los foros cuenta dentro de…', options: ['Las pruebas teóricas (70 %)', 'Las prácticas (20 %)', 'Las tutorías académicas (10 %)', 'No cuenta'], answer: 2, explain: 'Foros, chats, videoconferencias, autoevaluaciones, debates…' },
+          { type: 'mc', q: '¿Qué hace falta en prácticas para aprobar la asignatura?', options: ['Nada: son voluntarias', 'Asistir a todas y superarlas con un 5 como mínimo', 'Solo entregar la memoria', 'Asistir a la mitad'], answer: 1, explain: 'Es requisito.' },
+          { type: 'info', title: 'Comunicación', text: 'Las consultas, por **correo** (hperez@ucam.edu): la vía más rápida. Anuncios y material, en el **campus virtual** (activa las notificaciones). Habrá intervenciones breves en los **foros**, con aviso previo.\n\nLa nota de participación **no** se consigue asistiendo solo el día del examen, y si faltas hay que recuperar los contenidos: la asignatura es de **progresión continua**.' },
+          { type: 'mc', q: '¿Cuál es la vía de consulta con respuesta más rápida?', options: ['El foro', 'El correo al profesor', 'Esperar a la clase siguiente', 'El chat de la IA'], answer: 1, explain: 'hperez@ucam.edu' },
+        ],
+      },
+      {
+        title: 'Programar, Linux e IA en la asignatura',
+        exercises: [
+          { type: 'info', title: 'Programar en bioinformática', text: 'Programar es **traducir una pregunta científica a pasos que un ordenador ejecuta**:\n\n1. Delimitar el resultado buscado y descomponerlo en pasos ordenados.\n2. Expresarlo como comandos, script o notebook.\n3. Ejecutar, examinar la salida y corregir: **el error aporta información**.\n\nNo hace falta formación informática previa, pero sí **práctica**, con ejercicios de dificultad creciente. Un programa es un **procedimiento reproducible**, condición del trabajo científico.' },
+          { type: 'mc', q: 'Según el Tema 0, un programa es, sobre todo…', options: ['Un fichero difícil de leer', 'Un procedimiento reproducible, condición del trabajo científico', 'Algo que solo hacen los informáticos', 'Una forma de evitar los errores'], answer: 1, explain: 'Y el error aporta información.' },
+          { type: 'info', title: 'Linux en la teoría', text: 'En las sesiones de 2 h se dedican **hasta 30 minutos** a la consola. **No** es un tema independiente: se reparte por todo el curso. Exige **práctica sostenida**: memorizar no basta. El objetivo es llegar a las prácticas con la consola ya usada.' },
+          { type: 'mc', q: '¿Cuánto tiempo de consola hay en una sesión de teoría de 2 horas?', options: ['Toda la sesión', 'Hasta 30 minutos', 'Ninguno: Linux es un tema aparte', 'Solo en el examen'], answer: 1, explain: 'Linux se distribuye a lo largo del curso.' },
+          { type: 'info', title: 'Entornos de ejecución', code: 'Entorno           Descripción                    Uso previsto\nLocal             portátil o equipo del aula     clase, tareas ligeras, visualización\nLinux / consola   línea de órdenes en equipo     tratamiento de datos, scripts\n                  o servidor                     y prácticas\nCloud / remoto    Colab, clúster u otro          cálculos exigentes o entornos\n                  servidor                       ya configurados', text: 'Se recomienda portátil propio (los del aula también valen); una tableta no cubre todas las tareas.' },
+          { type: 'mc', q: '¿Qué entorno se usa para cálculos exigentes o entornos ya configurados?', options: ['Local', 'Linux / consola', 'Cloud / remoto (Colab, clúster)', 'La tableta'], answer: 2, explain: 'Local: clase y visualización; consola: datos, scripts y prácticas.' },
+          { type: 'info', title: 'Inteligencia artificial', text: 'Algunos ejercicios **requerirán** asistentes de IA (ChatGPT, Claude, Gemini); en otros quedará **excluida** a propósito.\n\nCondiciones: **declarar** la herramienta cuando aporte texto o código relevante; **no** introducir datos personales ni material sensible; **verificar siempre**: inventan citas, rutas y datos.' },
+          { type: 'mc', q: '¿Cuál **no** es una condición de uso de la IA en la asignatura?', options: ['Declarar la herramienta si aporta texto o código', 'No introducir datos personales', 'Verificar siempre el resultado', 'Usarla en todos los ejercicios'], answer: 3, explain: 'En algunos se excluye expresamente.' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'definiciones', section: 's0', title: 'Definiciones y temario', icon: '📖', color: 'blue',
+    desc: 'Biotecnología, bioinformática, quimioinformática, HPC y ML.',
+    lessons: [
+      {
+        title: 'Bioinformática y quimioinformática',
+        exercises: [
+          { type: 'info', title: 'Biotecnología', text: 'Categorías de la industria biotecnológica mundial, de mayor a menor peso: **biofarmacia** (la mayor), biotecnología **industrial**, **agrícola**, **alimentaria**, **medioambiental** y **bioinformática** (la menor).' },
+          { type: 'mc', q: 'En el gráfico de categorías de la industria biotecnológica, ¿cuál es la mayor?', options: ['Bioinformática', 'Biofarmacia (Bio Pharma)', 'Alimentaria', 'Medioambiental'], answer: 1, explain: 'La bioinformática es la porción más pequeña.' },
+          { type: 'info', title: 'Bioinformática: cuatro definiciones', text: '**NIH (2000):** investigación, desarrollo o aplicación de herramientas computacionales para ampliar el uso de datos biológicos, médicos o de salud: adquirir, almacenar, organizar, archivar, analizar o visualizar.\n**Luscombe et al. (2001):** conceptualizar la biología en términos de **moléculas** y aplicar técnicas informáticas (matemáticas, informática, estadística) para entender y organizar su información **a gran escala**.\n**Wikipedia:** campo **interdisciplinar** que desarrolla métodos y software para entender datos biológicos (biología, informática, ingeniería de la información, matemáticas y estadística).\n**Bioinformatics.org:** cualquier uso de ordenadores para caracterizar los componentes moleculares de los seres vivos.' },
+          { type: 'mc', q: '¿Qué definición de bioinformática habla de conceptualizar la biología en términos de moléculas, a gran escala?', options: ['La del NIH (2000)', 'La de Luscombe et al. (2001)', 'La de Wikipedia', 'La de bioinformatics.org'], answer: 1, explain: 'La del NIH insiste en herramientas para datos biológicos y de salud.' },
+          { type: 'mc', q: 'Según todas las definiciones, la bioinformática es un campo…', options: ['Exclusivamente informático', 'Interdisciplinar: biología, informática, matemáticas y estadística', 'Solo de laboratorio húmedo', 'Solo de estadística'], answer: 1, explain: 'Combina disciplinas.' },
+          { type: 'info', title: 'Quimioinformática', text: '**Gasteiger:** aplicar métodos informáticos para resolver problemas químicos. **Faulon y Bender:** manejar información química. **Brown:** transformar datos en información y conocimiento para decidir mejor y más rápido en la identificación de cabezas de serie (*drug leads*). **Varnek y Baskin:** representar las moléculas como objetos (**grafos o vectores**) en un **espacio químico**.', code: '               Química cuántica    Campos de fuerza     Quimioinformática\nModelo         electrones/núcleos  átomos y enlaces     grafos y vectores\n                                                        de descriptores\nRazonamiento   deductivo ≫         deductivo >          deductivo ≪\n               inductivo           inductivo            inductivo\nConcepto base  dualidad            mecánica clásica     espacio químico\n               onda/partícula\nMatemáticas    Schrödinger         campos de fuerza,    aprendizaje\n               (HF, DFT…)          MD, Monte Carlo      estadístico, grafos' },
+          { type: 'mc', q: 'En quimioinformática, las moléculas se representan como…', options: ['Electrones y núcleos', 'Átomos y enlaces con mecánica clásica', 'Grafos y vectores de descriptores en un espacio químico', 'Secuencias FASTA'], answer: 2, explain: 'Electrones y núcleos: química cuántica; átomos y enlaces: campos de fuerza.' },
+          { type: 'mc', q: '¿Qué rama de la química teórica es sobre todo **inductiva** (aprende de los datos)?', options: ['Química cuántica', 'Modelado con campos de fuerza', 'Quimioinformática', 'Ninguna'], answer: 2, explain: 'Deductivo ≪ inductivo: aprendizaje estadístico.' },
+        ],
+      },
+      {
+        title: 'HPC, machine learning y temario',
+        exercises: [
+          { type: 'info', title: 'High Performance Computing', text: 'Rendimiento mediante computación de altas prestaciones: **menor tiempo hasta la solución**, **mayor rendimiento** (*throughput*), **eficiencia energética** y **escalado**. Aplicaciones: genómica y medicina personalizada, diseño asistido por ordenador, diseño de materiales, energías renovables, vehículos autónomos…' },
+          { type: 'mc', q: '¿Cuál **no** es uno de los cuatro beneficios de la computación de altas prestaciones del esquema?', options: ['Menor tiempo hasta la solución', 'Mayor throughput', 'Eficiencia energética', 'Escalado', 'Menos necesidad de programar'], answer: 4, explain: 'Hace falta programar igualmente.' },
+          { type: 'info', title: 'Los paradigmas de la ciencia', code: '1.er  Empírica           observación y experimentación\n2.º   Teórica (1600s)    leyes científicas\n3.er  Computacional      simulaciones, dinámica molecular,\n      (1950s)            modelos mecanicistas\n4.º   Basada en datos    big data, machine learning,\n      (2000s)            patrones\n      Descubrimiento     hipótesis generadas por IA,\n      acelerado (2020s)  experimentación autónoma', text: 'La ciencia ha cambiado de paradigma al ritmo de su tecnología: cada vez más velocidad, automatización y escala.' },
+          { type: 'mc', q: 'El machine learning y el big data caracterizan el…', options: ['1.er paradigma (empírico)', '2.º paradigma (teórico)', '3.er paradigma (computacional)', '4.º paradigma (basado en datos)'], answer: 3, explain: 'El 3.º es el de las simulaciones y la dinámica molecular.' },
+          { type: 'mc', q: 'Las simulaciones y la dinámica molecular corresponden a la ciencia…', options: ['Empírica', 'Teórica', 'Computacional (3.er paradigma)', 'Basada en datos'], answer: 2, explain: 'Desde los años 50.' },
+          { type: 'info', title: 'Temario', code: '1. Introducción a la bioinformática. Estructural y de secuencias.\n2. Fundamentos matemáticos de los métodos de simulación.\n3. Computación de altas prestaciones.\n4. Visualización de biomoléculas.\n5. Bases de datos biológicos.\n6. Aplicación de técnicas computacionales a la modelización estructural.\n7. Bioinformática de secuencias.', text: 'El parcial cubre los Temas 0 y 1.' },
+          { type: 'mc', q: '¿En qué tema del curso se ve la bioinformática de **secuencias** (BLAST)?', options: ['Tema 2', 'Tema 4', 'Tema 6', 'Tema 7'], answer: 3, explain: 'La visualización es el 4; la modelización estructural, el 6.' },
+          { type: 'mc', q: 'La visualización de biomoléculas es el…', options: ['Tema 3', 'Tema 4', 'Tema 5', 'Tema 7'], answer: 1, explain: 'El 3 es computación de altas prestaciones; el 5, bases de datos.' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'convocatoria', section: 's0', title: 'El primer parcial', icon: '🗓️', color: 'red',
+    desc: 'Convocatoria del 21/10/2026 y cómo puntúa.',
+    lessons: [{
+      title: 'Convocatoria y estrategia',
+      exercises: [
+        { type: 'info', title: 'Primer parcial', text: '**Miércoles 21/10/2026, de 9:30 a 10:30**, en el aula habitual de clase.\n\n**Entra:** todo lo impartido hasta el 14 de octubre (**Temas 0 y 1**), **incluidas las tareas y los foros**.\n**No entra:** las prácticas (tienen examen propio) ni los documentos **Extra** (chuleta, extra de vi y órdenes básicas).\n\nNotas: 26/10. Revisión: 27/10, de 15:00 a 16:00, en UCAM HiTech.' },
+        { type: 'mc', q: '¿Entran los documentos Extra (chuleta, vi, órdenes básicas)?', options: ['Sí, todos', 'No', 'Solo la chuleta', 'Solo el de vi'], answer: 1, explain: 'Pero lo que salió en las tareas sí entra.' },
+        { type: 'mc', q: '¿Entran las tareas y los foros?', options: ['No', 'Solo las tareas', 'Sí, las dos cosas', 'Solo los foros'], answer: 2, explain: 'Y las preguntas son «en la línea de las preguntas de las tareas».' },
+        { type: 'info', title: 'Cómo puntúa', text: 'Tipo test, **5 opciones** y una sola correcta. **Acierto: +1. Error: −0,25. En blanco: 0.**\n\nSi contestas **al azar** entre las 5, de media ganas 1/5 × 1 − 4/5 × 0,25 = **0**: ni ganas ni pierdes.\nSi puedes **descartar una opción** (quedan 4), la media es 1/4 − 3/4 × 0,25 = **+0,06**: compensa arriesgar.\nSi descartas dos (quedan 3): 1/3 − 2/3 × 0,25 = **+0,17**.' },
+        { type: 'mc', q: 'Con 5 opciones y −0,25 por error, si no tienes ni idea y contestas al azar, de media…', options: ['Pierdes 0,25', 'Ni ganas ni pierdes (0)', 'Ganas 0,2', 'Ganas 1'], answer: 1, explain: '1/5 − 4/5 × 0,25 = 0.' },
+        { type: 'mc', q: 'Has descartado dos opciones con seguridad. ¿Te conviene contestar?', options: ['No: siempre en blanco', 'Sí: de media ganas unos +0,17 puntos', 'Da igual', 'Solo si es la última'], answer: 1, explain: '1/3 − 2/3 × 0,25 ≈ 0,17.' },
+        { type: 'mc', q: 'Aciertas 20, fallas 8 y dejas 2 en blanco. ¿Cuántos puntos?', options: ['20', '18', '12', '22'], answer: 1, explain: '20 − 8 × 0,25 = 18.' },
+        { type: 'mc', q: '¿Qué está prohibido llevar durante el examen?', options: ['Bolígrafo azul', 'DNI', 'Dispositivos electrónicos, incluidos relojes de cualquier tipo', 'Rotulador Edding negro'], answer: 2, explain: 'Bolígrafo o Edding azul o negro; nada de fluorescentes; DNI o tarjeta obligatorios; no se resuelven dudas.' },
+      ],
+    }],
+  },
+
   // ═════════════════════════════════ SECCIÓN 1 · PRIMEROS PASOS ═════════════════════════════════
   {
     id: 'terminal', section: 's1', title: 'La terminal', icon: '🖥️', color: 'green',
@@ -371,6 +455,7 @@ export const UNITS = [
     lessons: [
       {
         title: 'vi y sus dos modos',
+        noExam: 'Sale del documento Extra de vi: no entra en el examen.',
         exercises: [
           { type: 'info', title: 'vi tiene dos modos', text: 'En el servidor no hay ratón ni menú Archivo. vi tiene:\n\n**Edición** (al abrir): órdenes como `dd`, `u`, `:w`, `:q`.\n**Inserción**: escribir texto. Abajo pone `-- INSERT --`.', code: 'Esc + i    → inserción\nEsc Esc    → edición' },
           { type: 'mc', q: 'Abres un fichero con vi. ¿En qué modo estás?', options: ['Inserción', 'Edición', 'Visual', 'Ninguno'], answer: 1, explain: 'Si tecleas letras, son órdenes.' },
@@ -914,77 +999,189 @@ export const UNITS = [
   },
 
   // ═════════════════════════════════ SECCIÓN 6 · REPASO DE EXAMEN ═════════════════════════════════
-  // Formato del examen: tipo test de opción múltiple, una sola respuesta correcta.
+  // Formato de la convocatoria: tipo test, 5 opciones, una correcta; +1 acierto, −0,25 error, 0 en blanco.
+  // Todas las preguntas de esta sección (y las V/F de las tareas) forman el banco del simulacro.
+  {
+    id: 'examen-0', section: 's6', title: 'Test: Tema 0', icon: '🎒', color: 'yellow',
+    desc: 'Asignatura, definiciones y temario.',
+    lessons: [{
+      title: 'Test Tema 0',
+      exercises: [
+        { type: 'mc', q: 'En la evaluación de la asignatura, las pruebas teóricas suponen…', options: ['10 % de la nota final', '20 % de la nota final', '30 % de la nota final', '50 % de la nota final', '70 % de la nota final'], answer: 4, explain: '20 % prácticas y 10 % tutorías académicas.' },
+        { type: 'mc', q: '¿Qué afirmación sobre las prácticas es correcta?', options: ['Son voluntarias', 'Basta con asistir a la mitad', 'Su asistencia y superación (mínimo 5) son requisito para aprobar', 'Entran en el primer parcial', 'Las imparte el profesor de teoría'], answer: 2, explain: 'Tienen examen propio y las lleva Jorge R. Alonso Fernández.' },
+        { type: 'mc', q: 'La participación en foros, chats y debates se evalúa dentro de…', options: ['Las pruebas teóricas', 'Las pruebas prácticas', 'Las tutorías académicas (10 %)', 'El examen parcial', 'No se evalúa'], answer: 2, explain: 'No se obtiene asistiendo solo el día del examen.' },
+        { type: 'mc', q: '¿Qué definición de bioinformática corresponde a Luscombe et al. (2001)?', options: ['Cualquier uso de ordenadores para caracterizar componentes moleculares', 'Conceptualizar la biología en términos de moléculas y aplicar técnicas informáticas a gran escala', 'Herramientas para adquirir, almacenar y visualizar datos de salud', 'El manejo de información química', 'La aplicación de la estadística a la medicina'], answer: 1, explain: 'La de los datos de salud es la del NIH (2000).' },
+        { type: 'mc', q: 'En quimioinformática, según Varnek y Baskin, las moléculas se representan como…', options: ['Electrones y núcleos', 'Átomos y enlaces', 'Grafos o vectores en un espacio químico', 'Secuencias de letras', 'Coordenadas PDB'], answer: 2, explain: 'Su base matemática: aprendizaje estadístico y teoría de grafos.' },
+        { type: 'mc', q: '¿Qué rama de la química teórica usa la dualidad onda/partícula y la ecuación de Schrödinger?', options: ['Quimioinformática', 'Modelado con campos de fuerza', 'Química cuántica', 'Bioinformática de secuencias', 'Machine learning'], answer: 2, explain: 'Campos de fuerza: mecánica clásica.' },
+        { type: 'mc', q: 'El 4.º paradigma de la ciencia se caracteriza por…', options: ['La observación y la experimentación', 'Las leyes científicas', 'Las simulaciones y la dinámica molecular', 'El big data y el machine learning', 'La ausencia de ordenadores'], answer: 3, explain: '1.º empírico, 2.º teórico, 3.º computacional.' },
+        { type: 'mc', q: '¿Cuál es el Tema 7 de la asignatura?', options: ['Visualización de biomoléculas', 'Bases de datos biológicos', 'Computación de altas prestaciones', 'Bioinformática de secuencias', 'Fundamentos matemáticos de la simulación'], answer: 3, explain: 'Allí entran BLAST y los alineamientos.' },
+        { type: 'mc', q: 'Según el Tema 0, en una sesión de teoría de 2 horas la consola Linux ocupa…', options: ['Toda la sesión', 'Hasta 30 minutos', 'Una hora exacta', 'Nada: es solo en prácticas', '10 minutos al final'], answer: 1, explain: 'No es un tema independiente: se reparte por todo el curso.' },
+        { type: 'mc', q: '¿Qué entorno de ejecución se reserva para cálculos exigentes?', options: ['El portátil', 'El equipo del aula', 'La tableta', 'Cloud o remoto (Colab, clúster)', 'El móvil'], answer: 3, explain: 'La consola Linux: datos, scripts y prácticas.' },
+        { type: 'mc', q: '¿Cuál es una condición de uso de la IA en la asignatura?', options: ['Usarla en todos los ejercicios', 'No declararla nunca', 'Verificar siempre el resultado', 'Pegar los datos personales para mejores respuestas', 'Fiarse de las citas que genera'], answer: 2, explain: 'Generan citas, rutas y datos inexistentes.' },
+        { type: 'mc', q: 'Según el Tema 0, programar en bioinformática es…', options: ['Memorizar órdenes', 'Traducir una pregunta científica a pasos que un ordenador ejecuta', 'Instalar programas', 'Usar solo la IA', 'Algo reservado a informáticos'], answer: 1, explain: 'Delimitar, expresar, ejecutar y corregir.' },
+      ],
+    }],
+  },
   {
     id: 'examen-1a', section: 's6', title: 'Test: Tema 1A', icon: '📝', color: 'blue',
-    desc: 'Preguntas tipo test de Linux y bash.',
+    desc: 'Linux y scripts de bash.',
     lessons: [
       {
         title: 'Test 1A · órdenes',
         exercises: [
-          { type: 'mc', q: '¿Cuál de estas rutas es **relativa**?', options: ['/home/bio_alumno', '/bin', '../tarea2', '/home/bio_alumno/trabajo-1a'], answer: 2, explain: 'Las absolutas empiezan por /; `..` parte del directorio actual.' },
-          { type: 'mc', q: '¿Qué orden copia el directorio `datos` con todo su contenido en `copia`?', options: ['cp datos copia', 'cp -r datos copia', 'mv -r datos copia', 'cd -r datos copia'], answer: 1, explain: 'Sin -r, cp omite los directorios.' },
-          { type: 'mc', q: '¿Qué hace `ls -l > lista.txt` si `lista.txt` ya existe?', options: ['Añade el listado al final', 'Sobrescribe el fichero con el listado', 'Da error', 'Crea lista.txt.1'], answer: 1, explain: 'Para añadir: >>.' },
-          { type: 'mc', q: '¿Qué orden permite leer un fichero largo página a página?', options: ['cat', 'more', 'head', 'touch'], answer: 1, explain: 'También less, que además deja volver atrás.' },
-          { type: 'mc', q: 'En `more`, ¿qué tecla avanza **una página**?', options: ['Enter', 'La barra espaciadora', 'q', 'Ctrl+C'], answer: 1, explain: 'Enter avanza una línea; q sale.' },
-          { type: 'mc', q: '¿Qué cuenta `grep -c \'^HETATM\' 1HVR.pdb`?', options: ['Las líneas que contienen HETATM en cualquier posición', 'Las líneas que empiezan por HETATM', 'Los caracteres HETATM', 'Las líneas que no son HETATM'], answer: 1, explain: '-c cuenta; ^ ancla al principio (64 en 1HVR).' },
-          { type: 'mc', q: '¿Qué orden actualiza el clon del repositorio de clase con los cambios del profesor?', options: ['git clone, otra vez', 'git pull, dentro del repositorio', 'git status', 'cp -r'], answer: 1, explain: 'El clon no se actualiza solo.' },
-          { type: 'mc', q: '¿Qué orden muestra la arquitectura del servidor (x86_64)?', options: ['whoami', 'uname -a', 'id', 'pwd'], answer: 1, explain: 'uname -a: kernel, nombre y arquitectura.' },
-          { type: 'mc', q: '¿Para qué sirve FileZilla en la asignatura?', options: ['Para editar scripts', 'Para transferir ficheros entre el portátil y el servidor', 'Para clonar el repositorio', 'Para medir superficies'], answer: 1, explain: 'En los dos sentidos, por SFTP.' },
-          { type: 'mc', q: 'En vi, ¿qué secuencia guarda los cambios y sale?', options: ['Esc :q!', 'Esc :wq', 'Ctrl+X', 'Esc dd'], answer: 1, explain: ':q! sale sin guardar; Ctrl+X es de nano.' },
+          { type: 'mc', q: '¿Cuál de estas rutas es **relativa**?', options: ['/home/bio_alumno', '/bin', '../tarea2', '/home/bio_alumno/trabajo-1a', '/etc/shells'], answer: 2, explain: 'Las absolutas empiezan por /.' },
+          { type: 'mc', q: '¿Qué orden copia el directorio `datos` con todo su contenido en `copia`?', options: ['cp datos copia', 'cp -r datos copia', 'mv -r datos copia', 'cd -r datos copia', 'rm -r datos copia'], answer: 1, explain: 'Sin -r, cp omite los directorios.' },
+          { type: 'mc', q: '¿Qué hace `ls -l > lista.txt` si `lista.txt` ya existe?', options: ['Añade el listado al final', 'Sobrescribe el fichero con el listado', 'Da error', 'Crea lista.txt.1', 'Muestra el listado y no toca el fichero'], answer: 1, explain: 'Para añadir: >>.' },
+          { type: 'mc', q: 'En `more`, ¿qué tecla avanza **una página**?', options: ['Enter', 'La barra espaciadora', 'q', 'Ctrl+C', 'Tab'], answer: 1, explain: 'Enter avanza una línea; q sale.' },
+          { type: 'mc', q: '¿Qué cuenta `grep -c \'^HETATM\' 1HVR.pdb`?', options: ['Las líneas que contienen HETATM en cualquier posición', 'Las líneas que empiezan por HETATM', 'Los caracteres de la palabra HETATM', 'Las líneas que no son HETATM', 'Los átomos de hidrógeno'], answer: 1, explain: '-c cuenta; ^ ancla al principio (64 en 1HVR).' },
+          { type: 'mc', q: '¿Qué orden actualiza el clon del repositorio de clase?', options: ['git clone, otra vez', 'git pull, dentro del repositorio', 'git status', 'cp -r', 'git commit'], answer: 1, explain: 'El clon no se actualiza solo.' },
+          { type: 'mc', q: '¿Qué orden muestra la arquitectura del servidor (x86_64)?', options: ['whoami', 'uname -a', 'id', 'pwd', 'hostname'], answer: 1, explain: 'Tarea 1A2, ejercicio 5.' },
+          { type: 'mc', q: '¿Para qué sirve FileZilla en la asignatura?', options: ['Para editar scripts', 'Para transferir ficheros entre el portátil y el servidor', 'Para clonar el repositorio', 'Para medir superficies', 'Para ejecutar bash'], answer: 1, explain: 'En los dos sentidos, con la IP del servidor en Host.' },
+          { type: 'mc', q: '`ps` muestra el proceso `bash` y también `ps`. ¿Por qué?', options: ['Porque hay un error', 'Porque ps también es un proceso en ejecución al hacer la foto', 'Porque se lanzó dos veces', 'Porque bash y ps son lo mismo', 'Porque ps -ef lo añade'], answer: 1, explain: 'Tarea 1A2, ejercicio 6.' },
+          { type: 'mc', q: 'En nano, ¿cómo se guarda el fichero?', options: [':w', 'Ctrl+O', 'Ctrl+X', 'Ctrl+S', 'Esc'], answer: 1, explain: 'Ctrl+X sale.' },
+          { type: 'mc', q: '`cd` es una orden **interna** de bash. ¿Qué responde `type cd`?', options: ['cd is /usr/bin/cd', 'cd is a shell builtin', 'cd: not found', 'cd is a shell keyword', 'cd is aliased'], answer: 1, explain: '`type cut` respondería /usr/bin/cut: externa.' },
         ],
       },
       {
         title: 'Test 1A · scripts',
         exercises: [
-          { type: 'mc', q: 'Un fichero tiene `-rwxr-x---`. ¿Qué afirmación es correcta?', options: ['El resto de usuarios puede leerlo', 'El grupo puede ejecutarlo pero no modificarlo', 'El dueño no puede ejecutarlo', 'En octal es 755'], answer: 1, explain: 'Grupo r-x; otros ---; octal 750.' },
-          { type: 'mc', q: '¿Qué permisos deja `chmod 644 notas.txt`?', options: ['rwxr--r--', 'rw-r--r--', 'rw-rw-rw-', 'rwxr-xr-x'], answer: 1, explain: '6 = rw-, 4 = r--.' },
-          { type: 'mc', q: '`hola.sh` no tiene permiso de ejecución. ¿Cómo se lanza sin cambiar permisos?', options: ['./hola.sh', 'bash hola.sh', 'hola.sh', 'exec hola.sh'], answer: 1, explain: 'bash solo necesita leerlo.' },
-          { type: 'mc', q: '¿Cuál asigna correctamente el valor 5 a la variable `n`?', options: ['n = 5', 'n=5', '$n=5', 'set n 5'], answer: 1, explain: 'Sin espacios alrededor del =.' },
-          { type: 'mc', q: '¿Cuánto vale `$#` en `./s.sh a "b c" d`?', options: ['2', '3', '4', '1'], answer: 1, explain: '"b c" es un solo argumento entre comillas.' },
-          { type: 'mc', q: '¿Qué imprime `for i in $(seq 2 2 8); do echo $i; done`?', options: ['2 3 4 5 6 7 8', '2 4 6 8', '2 8', '2 2 8'], answer: 1, explain: 'seq inicio paso fin.' },
-          { type: 'mc', q: '`[ "$n" -lt 10 ]` es cierto cuando…', options: ['n es un texto que empieza por 1', 'n es un número entero menor que 10', 'n tiene menos de 10 letras', 'n está vacío'], answer: 1, explain: '-lt: less than, para enteros.' },
-          { type: 'mc', q: '¿Qué mensaje da `if [ -f "$f"]; then`?', options: ['unary operator expected', "[: missing `]'", 'command not found', 'Permission denied'], answer: 1, explain: 'Falta el espacio antes de ].' },
-          { type: 'mc', q: '¿Qué orden revisa la sintaxis de un script **sin ejecutarlo**?', options: ['bash -x s.sh', 'bash -n s.sh', 'cat -A s.sh', 'chmod +x s.sh'], answer: 1, explain: 'bash -x ejecuta mostrando cada orden.' },
-          { type: 'mc', q: 'Un script da `/bin/bash^M: bad interpreter`. ¿Qué lo arregla?', options: ["sed -i 's/\\r$//' script.sh", 'chmod 777 script.sh', 'bash -n script.sh', 'mv script.sh script'], answer: 0, explain: 'Quita el fin de línea de Windows.' },
-          { type: 'mc', q: '¿Qué hace `continue` dentro de un bucle?', options: ['Sale del bucle', 'Salta a la siguiente vuelta', 'Repite la vuelta actual', 'Termina el script'], answer: 1, explain: 'break sale del bucle.' },
-          { type: 'mc', q: 'En 07-while.sh se comenta la línea `shift`. ¿Qué ocurre?', options: ['Imprime los tres parámetros', 'Bucle infinito imprimiendo el primer parámetro', 'Error de sintaxis', 'No imprime nada'], answer: 1, explain: '$1 nunca cambia. Se corta con Ctrl+C.' },
+          { type: 'mc', q: 'Un fichero tiene `-rwxr-x---`. ¿Qué afirmación es correcta?', options: ['El resto de usuarios puede leerlo', 'El grupo puede ejecutarlo pero no modificarlo', 'El dueño no puede ejecutarlo', 'En octal es 755', 'Es un directorio'], answer: 1, explain: 'Grupo r-x; otros ---; octal 750.' },
+          { type: 'mc', q: '¿Qué permisos deja `chmod 644 notas.txt`?', options: ['rwxr--r--', 'rw-r--r--', 'rw-rw-rw-', 'rwxr-xr-x', 'r--r--r--'], answer: 1, explain: '6 = rw-, 4 = r--.' },
+          { type: 'mc', q: '`hola.sh` no tiene permiso de ejecución. ¿Cómo se lanza sin cambiar permisos?', options: ['./hola.sh', 'bash hola.sh', 'hola.sh', 'sudo hola.sh', 'chmod hola.sh'], answer: 1, explain: 'bash solo necesita leerlo.' },
+          { type: 'mc', q: '¿Cuál asigna correctamente el valor 5 a la variable `n`?', options: ['n = 5', 'n=5', '$n=5', 'set n 5', 'n == 5'], answer: 1, explain: 'Sin espacios alrededor del =.' },
+          { type: 'mc', q: '¿Cuánto vale `$#` en `./s.sh a "b c" d`?', options: ['1', '2', '3', '4', '5'], answer: 2, explain: '"b c" es un solo argumento.' },
+          { type: 'mc', q: '¿Qué imprime `for i in $(seq 2 2 8); do echo $i; done`?', options: ['2 3 4 5 6 7 8', '2 4 6 8', '2 8', '2 2 8', '8 6 4 2'], answer: 1, explain: 'seq inicio paso fin.' },
+          { type: 'mc', q: '`[ "$n" -lt 10 ]` es cierto cuando…', options: ['n empieza por 1', 'n es un número entero menor que 10', 'n tiene menos de 10 letras', 'n está vacío', 'n es mayor que 10'], answer: 1, explain: '-lt: less than, para enteros.' },
+          { type: 'mc', q: '¿Qué mensaje da `if [ -f "$f"]; then`?', options: ['unary operator expected', "[: missing `]'", 'command not found', 'Permission denied', 'No such file or directory'], answer: 1, explain: 'Falta el espacio antes de ].' },
+          { type: 'mc', q: '¿Qué orden revisa la sintaxis de un script **sin ejecutarlo**?', options: ['bash -x s.sh', 'bash -n s.sh', 'cat -A s.sh', 'chmod +x s.sh', 'man s.sh'], answer: 1, explain: 'bash -x ejecuta mostrando cada orden.' },
+          { type: 'mc', q: 'Un script da `/bin/bash^M: bad interpreter`. ¿Qué lo arregla?', options: ["sed -i 's/\\r$//' script.sh", 'chmod 777 script.sh', 'bash -n script.sh', 'mv script.sh script', 'git pull'], answer: 0, explain: 'Quita el fin de línea de Windows.' },
+          { type: 'mc', q: '¿Qué hace `continue` dentro de un bucle?', options: ['Sale del bucle', 'Salta a la siguiente vuelta', 'Repite la vuelta actual', 'Termina el script', 'Reinicia el bucle'], answer: 1, explain: 'break sale del bucle.' },
+          { type: 'mc', q: 'En 07-while.sh se comenta la línea `shift`. ¿Qué ocurre?', options: ['Imprime los tres parámetros', 'Bucle infinito imprimiendo el primer parámetro', 'Error de sintaxis', 'No imprime nada', 'Imprime solo el último'], answer: 1, explain: '$1 nunca cambia. Se corta con Ctrl+C.' },
+          { type: 'mc', q: 'En 11-asignar-mils.sh, ¿qué hace la línea `echo "$mils"`?', options: ['Ejecuta ls -l', 'Imprime el texto ls -l', 'Da command not found', 'No hace nada', 'Borra la variable'], answer: 1, explain: '`$mils` sí ejecuta ls -l; `mils` da command not found.' },
         ],
       },
     ],
   },
   {
     id: 'examen-1bc', section: 's6', title: 'Test: Temas 1B y 1C', icon: '🎓', color: 'green',
-    desc: 'Preguntas tipo test de IA y bioinformática estructural.',
+    desc: 'IA con criterio y bioinformática estructural.',
     lessons: [
       {
         title: 'Test 1B · IA con criterio',
         exercises: [
-          { type: 'mc', q: '¿Cuáles son las cuatro piezas de un prompt anclado?', options: ['Saludo, pregunta, ejemplo y despedida', 'Contexto, encargo, límites y parada', 'Código, error, versión y fecha', 'Entrada, salida, bucle y fin'], answer: 1, explain: 'Contexto fija el entorno; encargo, una acción; límites, lo no admisible; parada, el formato.' },
-          { type: 'mc', q: '¿Qué afirmación sobre un chat de IA es correcta?', options: ['Su seguridad al responder garantiza que acierte', 'No tiene acceso a los ficheros del servidor', 'El mismo prompt da siempre la misma respuesta', 'Ejecuta las órdenes en el servidor'], answer: 1, explain: 'El usuario es el único canal.' },
-          { type: 'mc', q: '¿Qué información **sí** puede introducirse en el asistente?', options: ['La dirección del servidor', 'Las calificaciones de la clase', 'Los scripts del repositorio de clase', 'Tu contraseña'], answer: 2, explain: 'También enunciados del curso y ficheros públicos del PDB.' },
-          { type: 'mc', q: 'La IA propone una opción de grep que no conoces. ¿Qué haces?', options: ['Ejecutarla directamente', 'Consultarla en man grep o grep --help', 'Preguntarle si está segura', 'Usar sudo'], answer: 1, explain: 'Si la orden no la reconoce, la propuesta se descarta.' },
-          { type: 'mc', q: '¿Cuál es la alternativa segura a `curl https://… | bash`?', options: ['sudo curl … | bash', 'curl -O y leer el fichero con less antes', 'chmod 777', 'Ejecutarlo dos veces'], answer: 1, explain: 'Así no ejecutas código sin leerlo.' },
-          { type: 'mc', q: 'Ante un *Permission denied* en tu script, la opción adecuada es…', options: ['chmod 777 *.sh', 'chmod u+x mi-03.sh', 'sudo bash', 'rm -rf'], answer: 1, explain: '777 da escritura a terceros.' },
-          { type: 'mc', q: '¿Qué contiene la declaración de uso de IA?', options: ['Solo el nombre de la herramienta', 'Herramienta y fecha, aportación concreta y comprobación realizada', 'El prompt completo', 'La contraseña de Gemini'], answer: 1, explain: 'En una frase.' },
-          { type: 'mc', q: '¿Qué es una alucinación de un modelo de lenguaje?', options: ['Un error de conexión', 'Contenido plausible pero falso', 'Una respuesta lenta', 'Un aviso de seguridad'], answer: 1, explain: 'Opciones, rutas o paquetes inexistentes.' },
-          { type: 'mc', q: 'Al pedir ayuda con un error, ¿qué se aporta?', options: ['Un resumen del problema', 'El script completo y el mensaje de error literal', 'Solo el número de línea', 'La IP del servidor'], answer: 1, explain: 'Y se pide primero la explicación.' },
+          { type: 'mc', q: '¿Cuáles son las cuatro piezas de un prompt anclado?', options: ['Saludo, pregunta, ejemplo y despedida', 'Contexto, encargo, límites y parada', 'Código, error, versión y fecha', 'Entrada, salida, bucle y fin', 'Rol, tono, longitud y formato'], answer: 1, explain: 'Contexto, encargo, límites y parada.' },
+          { type: 'mc', q: '¿Qué afirmación sobre un chat de IA es correcta?', options: ['Su seguridad al responder garantiza que acierte', 'No tiene acceso a los ficheros del servidor', 'El mismo prompt da siempre la misma respuesta', 'Ejecuta las órdenes en el servidor', 'Nunca inventa datos'], answer: 1, explain: 'El usuario es el único canal.' },
+          { type: 'mc', q: '¿Qué información **sí** puede introducirse en el asistente?', options: ['La dirección del servidor', 'Las calificaciones de la clase', 'Los scripts del repositorio de clase', 'Tu contraseña', 'Secuencias no publicadas de un TFG'], answer: 2, explain: 'También enunciados del curso y ficheros públicos del PDB.' },
+          { type: 'mc', q: 'La IA propone una opción de grep que no conoces. ¿Qué haces?', options: ['Ejecutarla directamente', 'Consultarla en man grep o grep --help', 'Preguntarle si está segura', 'Usar sudo', 'Instalar otro grep'], answer: 1, explain: 'Si la orden no la reconoce, la propuesta se descarta.' },
+          { type: 'mc', q: '¿Cuál es la alternativa segura a `curl https://… | bash`?', options: ['sudo curl … | bash', 'curl -O y leer el fichero con less antes', 'chmod 777', 'Ejecutarlo dos veces', 'rm -rf y volver a empezar'], answer: 1, explain: 'Así no ejecutas código sin leerlo.' },
+          { type: 'mc', q: 'Ante un *Permission denied* en tu script, la opción adecuada es…', options: ['chmod 777 *.sh', 'chmod u+x mi-03.sh', 'sudo bash', 'rm -rf', 'mv a /tmp'], answer: 1, explain: '777 da escritura a terceros.' },
+          { type: 'mc', q: '¿Qué contiene la declaración de uso de IA?', options: ['Solo el nombre de la herramienta', 'Herramienta y fecha, aportación concreta y comprobación realizada', 'El prompt completo', 'La contraseña de la herramienta', 'El número de tokens'], answer: 1, explain: 'En una frase.' },
+          { type: 'mc', q: '¿Qué es una alucinación de un modelo de lenguaje?', options: ['Un error de conexión', 'Contenido plausible pero falso', 'Una respuesta lenta', 'Un aviso de seguridad', 'Una respuesta en otro idioma'], answer: 1, explain: 'Opciones, rutas o paquetes inexistentes.' },
+          { type: 'mc', q: 'En `HET    XK2  A 263      46` de 1HVR, ¿qué indica el 46?', options: ['El residuo', 'El número de átomos (líneas HETATM) del grupo', 'La cadena', 'La resolución', 'El año'], answer: 1, explain: '46 + 9 + 9 = 64 HETATM.' },
+          { type: 'mc', q: 'Un agente como Gemini CLI…', options: ['No se equivoca', 'Accede a los ficheros y ejecuta órdenes, pero hay que revisar antes de aceptar', 'Solo traduce textos', 'No puede ejecutar nada', 'Sustituye la comprobación en el servidor'], answer: 1, explain: 'Suprime el copiar y pegar, no la revisión.' },
         ],
       },
       {
         title: 'Test 1C · estructural',
         exercises: [
-          { type: 'mc', q: '¿Qué programa descarga una entrada del Protein Data Bank?', options: ['pdb_wc', 'pdb_fetch', 'freesasa', 'which'], answer: 1, explain: 'Con > se guarda en un fichero.' },
-          { type: 'mc', q: '¿Qué hace `pdb_wc -h 1hvr.pdb`?', options: ['Muestra la ayuda', 'Cuenta las líneas HETATM', 'Cuenta los hidrógenos', 'Da la versión'], answer: 1, explain: 'En pdb_wc, -h no es la ayuda.' },
-          { type: 'mc', q: 'Por defecto, ¿qué átomos mide freesasa?', options: ['Todos', 'Solo los ATOM, sin hidrógenos', 'Solo los HETATM', 'Solo los hidrógenos'], answer: 1, explain: '--hetatm y --hydrogen los incluyen.' },
-          { type: 'mc', q: 'En 1HVR, pdb_wc cuenta 1826 átomos y freesasa 1500. ¿Por qué?', options: ['freesasa tiene un error', 'freesasa deja fuera los 326 hidrógenos', 'Faltan cadenas', 'pdb_wc cuenta dos veces'], answer: 1, explain: '1826 − 326 = 1500.' },
-          { type: 'mc', q: '¿Qué radio tiene la sonda con la que se calcula la SASA?', options: ['0,14 Å', '1,4 Å', '14 Å', '1,4 nm'], answer: 1, explain: 'Una molécula de agua.' },
-          { type: 'mc', q: '¿Cómo se calcula la fracción apolar de una proteína?', options: ['Total / Apolar', 'Apolar / Total', 'Polar − Apolar', 'Apolar × residuos'], answer: 1, explain: '1CRN: 1969,33 / 2999,32 = 0,657.' },
-          { type: 'mc', q: 'En la salida de freesasa, **Apolar** corresponde a…', options: ['Nitrógeno', 'Carbono', 'Oxígeno y azufre', 'Hidrógeno'], answer: 1, explain: 'Polar: N, O y S.' },
-          { type: 'mc', q: '¿Cómo se validan los residuos de pdb_wc con grep?', options: ["grep -c '^ATOM'", "contando los carbonos alfa: grep ' CA '", 'grep -c HETATM', 'wc -l'], answer: 1, explain: 'Un CA por residuo.' },
-          { type: 'mc', q: '¿Para qué sirve `if [ ! -f "$id.pdb" ]` en sasa-diez.sh?', options: ['Para borrar el fichero', 'Para descargar solo si el fichero no existe', 'Para comprobar permisos', 'Para contar átomos'], answer: 1, explain: 'No repite descargas ni sobrescribe.' },
-          { type: 'mc', q: 'BLAST y el alineamiento múltiple pertenecen a la rama de…', options: ['Bioinformática estructural', 'Análisis de secuencias', 'Permisos', 'Dinámica molecular'], answer: 1, explain: 'Tema 7 del curso.' },
-          { type: 'mc', q: 'En `freesasa --format=rsa`, la columna REL indica…', options: ['El área absoluta', 'El porcentaje expuesto respecto a un valor de referencia', 'El número de átomos', 'La cadena'], answer: 1, explain: 'Por ejemplo, Cys 40: 33,8 %.' },
+          { type: 'mc', q: '¿Qué programa descarga una entrada del Protein Data Bank?', options: ['pdb_wc', 'pdb_fetch', 'freesasa', 'which', 'curl -I'], answer: 1, explain: 'Con > se guarda en un fichero.' },
+          { type: 'mc', q: '¿Qué hace `pdb_wc -h 1hvr.pdb`?', options: ['Muestra la ayuda', 'Cuenta las líneas HETATM', 'Cuenta los hidrógenos', 'Da la versión', 'Descarga 1hvr'], answer: 1, explain: 'En pdb_wc, -h no es la ayuda.' },
+          { type: 'mc', q: 'Por defecto, ¿qué átomos mide freesasa?', options: ['Todos', 'Solo los ATOM, sin hidrógenos', 'Solo los HETATM', 'Solo los hidrógenos', 'Solo los carbonos'], answer: 1, explain: '--hetatm y --hydrogen los incluyen.' },
+          { type: 'mc', q: 'En 1HVR, pdb_wc cuenta 1826 átomos y freesasa 1500. ¿Por qué?', options: ['freesasa tiene un error', 'freesasa deja fuera los 326 hidrógenos', 'Faltan cadenas', 'pdb_wc cuenta dos veces', 'Por el inhibidor'], answer: 1, explain: '1826 − 326 = 1500.' },
+          { type: 'mc', q: '¿Qué radio tiene la sonda con la que se calcula la SASA?', options: ['0,14 Å', '1,4 Å', '14 Å', '1,4 nm', '4,1 Å'], answer: 1, explain: 'Una molécula de agua.' },
+          { type: 'mc', q: '¿Cómo se calcula la fracción apolar de una proteína?', options: ['Total / Apolar', 'Apolar / Total', 'Polar − Apolar', 'Apolar × residuos', 'Polar / Apolar'], answer: 1, explain: '1CRN: 1969,33 / 2999,32 = 0,657.' },
+          { type: 'mc', q: 'En la salida de freesasa, **Apolar** corresponde a…', options: ['Nitrógeno', 'Carbono', 'Oxígeno y azufre', 'Hidrógeno', 'Los HETATM'], answer: 1, explain: 'Polar: N, O y S.' },
+          { type: 'mc', q: '¿Cómo se validan los residuos de pdb_wc con grep?', options: ["grep -c '^ATOM'", "Contando los carbonos alfa: grep ' CA '", 'grep -c HETATM', 'wc -l', 'grep -c SSBOND'], answer: 1, explain: 'Un CA por residuo.' },
+          { type: 'mc', q: '¿Para qué sirve `if [ ! -f "$id.pdb" ]` en sasa-diez.sh?', options: ['Para borrar el fichero', 'Para descargar solo si el fichero no existe', 'Para comprobar permisos', 'Para contar átomos', 'Para salir del bucle'], answer: 1, explain: 'No repite descargas ni sobrescribe.' },
+          { type: 'mc', q: 'BLAST y el alineamiento múltiple pertenecen a la rama de…', options: ['Bioinformática estructural', 'Análisis de secuencias', 'Permisos', 'Dinámica molecular', 'Computación de altas prestaciones'], answer: 1, explain: 'Tema 7 del curso.' },
+          { type: 'mc', q: 'En `freesasa --format=rsa`, la columna REL indica…', options: ['El área absoluta', 'El porcentaje expuesto respecto a un valor de referencia', 'El número de átomos', 'La cadena', 'La resolución'], answer: 1, explain: 'Cys 40 de 1CRN: 33,8 %.' },
+          { type: 'mc', q: 'De las 10 proteínas de la Tarea 1C2, la de mayor fracción apolar fue 1c3w. ¿Por qué?', options: ['Es la más grande', 'Es una proteína de membrana (bacteriorrodopsina)', 'No tiene HETATM', 'Tiene cuatro cadenas', 'Por el grupo hemo'], answer: 1, explain: '0,739; la menor, 1ubq (0,479).' },
+          { type: 'mc', q: '`pdb_fetch 0crn > 0crn.pdb` con un código inexistente…', options: ['No crea ningún fichero', 'Deja 0crn.pdb vacío: > lo crea antes de que falle la descarga', 'Descarga 1crn', 'Escribe el error dentro del fichero', 'Borra 1crn.pdb'], answer: 1, explain: 'El error sale por pantalla.' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'examen-tareas', section: 's6', title: 'Test al estilo de las tareas', icon: '✅', color: 'purple',
+    desc: 'Cinco afirmaciones V/F y una combinación, como la Tarea 1D.',
+    lessons: [
+      {
+        title: 'Tarea 1D completa',
+        exercises: [T1D.filezilla, T1D.git, T1D.more, T1D.while07, T1D.mils, T1D.depurar, T1D.ifgrep, T1D.chatIA, T1D.prompt, T1D.pdbtools],
+      },
+      {
+        title: 'Más preguntas al estilo 1D',
+        exercises: [
+          vf('Sobre rutas y navegación', [
+            'Una ruta absoluta empieza siempre por `/`.',
+            '`cd ..` lleva siempre al HOME.',
+            '`cd` sin argumentos lleva al HOME.',
+            '`~` equivale a `/home/tu_usuario`.',
+            '`cd ../..` llega al mismo sitio desde cualquier directorio.',
+          ], 'VFVVF', ['Por eso vale desde cualquier sitio.', '`..` sube un nivel desde donde estás.', 'Igual que `cd ~`.', 'Es su abreviatura.', 'Es relativa: depende de dónde estés.']),
+          vf('Sobre ficheros y directorios', [
+            '`cp` sin `-r` no copia directorios.',
+            '`rm` manda los ficheros a una papelera de la que se pueden recuperar.',
+            '`mv` sirve tanto para mover como para renombrar.',
+            '`rmdir` borra un directorio aunque tenga ficheros dentro.',
+            '`touch nota.txt` crea un fichero vacío si no existe.',
+          ], 'VFVFV', ['«-r not specified; omitting directory».', 'No hay papelera.', 'Renombrar = mover.', 'Solo si está vacío.', 'Y si existe, actualiza su fecha.']),
+          vf('Sobre permisos (`-rwxr-x---  info.sh`)', [
+            'El dueño puede leer, escribir y ejecutar.',
+            'El grupo puede escribir.',
+            'El resto no puede hacer nada.',
+            'En octal son 750.',
+            '`chmod u+x` añade permiso de ejecución a todos.',
+          ], 'VFVVF', ['rwx.', 'r-x: sin w.', '---.', '7, 5, 0.', 'u = solo el dueño.']),
+          vf('Sobre redirección y tuberías', [
+            '`>` añade al final del fichero sin borrar lo anterior.',
+            '`>>` añade al final.',
+            'En `a | b`, la salida de `a` entra en `b`.',
+            '`<` toma la entrada de un fichero en lugar del teclado.',
+            'Una tubería necesita un fichero temporal intermedio.',
+          ], 'FVVVF', ['`>` sobrescribe.', 'Correcto.', 'Correcto.', 'Correcto.', 'Justo lo contrario.']),
+          vf('Sobre variables y parámetros', [
+            '`n = 5` asigna 5 a la variable n.',
+            '`$#` es el número de argumentos recibidos.',
+            '`$0` es el nombre del script.',
+            '`shift` descarta `$1` y corre el resto una posición.',
+            '`"$*"` entrega los argumentos uno a uno, igual que `"$@"`.',
+          ], 'FVVVF', ['Sin espacios: `n=5`.', 'Correcto.', 'Correcto.', 'Correcto.', '"$*" los junta en una cadena.']),
+          vf('Sobre if, test y bucles', [
+            'En `[ -f "$f" ]` hacen falta los espacios junto a los corchetes.',
+            '`-eq` compara números enteros.',
+            '`$(seq 0 5 25)` produce 0 5 10 15 20 25.',
+            '`until` repite mientras la condición sea cierta.',
+            '`break` salta a la siguiente vuelta del bucle.',
+          ], 'VVVFF', ['Si no: `[: missing ]`.', 'Para texto, `=`.', 'inicio paso fin.', 'Mientras sea falsa.', 'break sale; continue salta.']),
+          vf('Sobre órdenes propuestas por una IA', [
+            '`curl ... | bash` ejecuta código que no has leído.',
+            '`chmod 777 *.sh` es la forma recomendada de arreglar un *Permission denied*.',
+            '`sed -i` sobre el PDB modifica el fichero original.',
+            'Antes de ejecutar una propuesta conviene identificar qué modifica y si es reversible.',
+            'Si la IA lo propone, se puede instalar software en el servidor del curso.',
+          ], 'VFVVF', ['Se descarga y se lee antes.', 'Basta `chmod u+x` del script concreto.', 'Mejor `sed ... > copia.pdb`.', 'Es la pregunta pertinente.', 'No se instala nada: se avisa.']),
+          vf('Sobre FreeSASA y pdb_wc con 1HVR', [
+            '`pdb_wc` cuenta 1826 átomos en 1hvr.pdb.',
+            'freesasa usa 1500 átomos porque deja fuera los hidrógenos.',
+            'La diferencia significa que uno de los dos programas tiene un error.',
+            'Con `--hydrogen` el recuento de freesasa pasa a 1826.',
+            'Por defecto, freesasa incluye el inhibidor (HETATM) en el área.',
+          ], 'VVFVF', ['Correcto.', '1826 − 326 = 1500.', 'Cada uno cuenta un conjunto distinto.', 'Correcto.', 'Solo ATOM.']),
+          vf('Sobre la evaluación (Tema 0)', [
+            'Las pruebas teóricas suponen el 70 % de la nota.',
+            'La asistencia a prácticas es voluntaria.',
+            'La participación en foros cuenta en las tutorías académicas (10 %).',
+            'Los documentos Extra entran en el primer parcial.',
+            'En el parcial, cada error resta 0,25.',
+          ], 'VFVFV', ['Correcto.', 'Es obligatoria y hay que superarlas.', 'Correcto.', 'No entran.', 'Y las preguntas en blanco no puntúan.']),
+          vf('Sobre las definiciones del Tema 0', [
+            'La bioinformática es un campo interdisciplinar.',
+            'En el gráfico de la industria biotecnológica, la bioinformática es la categoría mayor.',
+            'La quimioinformática representa las moléculas como grafos o vectores en un espacio químico.',
+            'La química cuántica es sobre todo inductiva.',
+            'El machine learning caracteriza el 4.º paradigma de la ciencia.',
+          ], 'VFVFV', ['Biología, informática, matemáticas y estadística.', 'Es la menor; la mayor, biofarmacia.', 'Varnek y Baskin.', 'Deductiva ≫ inductiva.', 'Big data y machine learning.']),
         ],
       },
     ],
@@ -996,6 +1193,7 @@ UNITS.forEach(u => u.lessons.forEach((l, i) => { l.id = `${u.id}-${i + 1}`; }));
 export const LESSONS = UNITS.flatMap(u => u.lessons.map(l => ({ ...l, unit: u })));
 export function lessonById(id) { return LESSONS.find(l => l.id === id); }
 
-// Banco del simulacro (el examen es tipo test de opción múltiple): todas las preguntas
-// de opción múltiple del temario. Las que dependen de "tu respuesta" de una tarea también valen.
-export const EXAM_POOL = UNITS.flatMap(u => u.lessons.flatMap(l => l.exercises.filter(e => e.type === 'mc')));
+// Banco del simulacro: como en el parcial, preguntas de 5 opciones con una sola correcta.
+// Son las de la sección de repaso (tests por tema y V/F al estilo de la Tarea 1D).
+export const EXAM_POOL = [...new Set(UNITS.filter(u => u.section === 's6')
+  .flatMap(u => u.lessons.flatMap(l => l.exercises.filter(e => e.type === 'mc' || e.type === 'vf'))))];

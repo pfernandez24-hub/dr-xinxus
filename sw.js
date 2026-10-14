@@ -1,6 +1,6 @@
 // Service worker: deja la app disponible sin conexión.
 // Al publicar una versión nueva, sube el número de VERSION para que los móviles la actualicen.
-const VERSION = 'drxinxus-v3';
+const VERSION = 'drxinxus-v4';
 const FILES = [
   './', 'index.html', 'manifest.webmanifest', 'css/styles.css',
   'js/main.js', 'js/dom.js', 'js/store.js', 'js/content.js', 'js/lesson.js', 'js/shell.js', 'js/vfs.js',

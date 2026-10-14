@@ -26,7 +26,7 @@ export const ACHIEVEMENTS = [
   { id: 'sasa', icon: '💧', title: 'Superficie accesible', desc: 'Completa la unidad de SASA.', test: unitDone('sasa') },
   { id: 'simulacro', icon: '📝', title: 'Primer simulacro', desc: 'Haz un simulacro de examen.', test: s => (s.stats.exams || 0) >= 1 },
   { id: 'sobresaliente', icon: '🏆', title: 'Sobresaliente', desc: 'Saca un 9 o más en un simulacro.', test: s => (s.stats.examBest || 0) >= 9 },
-  { id: 'tema1', icon: '🧬', title: 'Tema 1 superado', desc: 'Completa todas las unidades.', test: s => UNITS.every(u => unitDone(u.id)(s)) },
+  { id: 'tema1', icon: '🧬', title: 'Temario del parcial superado', desc: 'Completa todas las unidades.', test: s => UNITS.every(u => unitDone(u.id)(s)) },
   { id: 'repaso', icon: '📚', title: 'Repasar es de sabios', desc: 'Haz 5 lecciones de repaso.', test: s => s.stats.practice >= 5 },
   { id: 'buho', icon: '🦉', title: 'Búho nocturno', desc: 'Termina una lección entre las 23:00 y las 5:00.', test: s => s.stats.night },
   { id: 'madrugador', icon: '🌅', title: 'Madrugador', desc: 'Termina una lección entre las 5:00 y las 8:00.', test: s => s.stats.early },

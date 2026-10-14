@@ -9,6 +9,7 @@ import { createTerminal } from './terminal-ui.js';
 import { ACHIEVEMENTS, checkAchievements } from './achievements.js';
 import { rankingEnabled, pushScore, fetchRanking } from './ranking.js';
 import { play } from './sound.js';
+import { runPairs, runRush, openHeartsSheet } from './games.js';
 
 const app = document.getElementById('app');
 let tab = 'learn';
@@ -53,7 +54,7 @@ function topBar() {
     h('div', { class: 'stats' },
       h('span', { class: 'stat ' + (s.streak.last === store.dayKey() ? 'stat-fire' : 'stat-off'), title: 'Racha de días' }, '🔥 ', String(s.streak.count)),
       h('span', { class: 'stat stat-xp', title: 'Experiencia total' }, '⚡ ', String(s.xp)),
-      h('span', { class: 'stat stat-heart', title: 'Vidas' }, '❤️ ', String(s.hearts.n))));
+      h('button', { type: 'button', class: 'stat stat-heart', title: 'Vidas: recupéralas con minijuegos', 'aria-label': `${s.hearts.n} vidas. Abrir minijuegos`, onclick: () => openHearts() }, '❤️ ', String(s.hearts.n))));
 }
 
 function bottomNav() {
@@ -204,10 +205,10 @@ function openLessonSheet(lesson, unit, done) {
       h('h2', {}, lesson.title),
       h('p', { class: 'muted' }, `${n} ejercicios · ${terms} en la terminal`),
       lesson.noExam ? h('p', { class: 'warn-text' }, `ℹ ${lesson.noExam}`) : null,
-      noHearts ? h('p', { class: 'warn-text' }, `Sin vidas. La próxima llega en ${Math.ceil(store.msToNextHeart() / 60000)} min, o gánala con un repaso.`) : null,
+      noHearts ? h('p', { class: 'warn-text' }, `Sin vidas. La próxima llega en ${Math.ceil(store.msToNextHeart() / 60000)} min, o gánala con un minijuego.`) : null,
       h('button', {
-        type: 'button', class: 'btn btn-main', onclick: () => { close(); noHearts ? startPractice() : startLesson(lesson, { replay: done }); },
-      }, noHearts ? 'Repasar' : done ? 'Repetir (+5 XP)' : `Empezar (+10 XP)`),
+        type: 'button', class: 'btn btn-main', onclick: () => { close(); noHearts ? openHearts() : startLesson(lesson, { replay: done }); },
+      }, noHearts ? '🎮 Recuperar vidas' : done ? 'Repetir (+5 XP)' : `Empezar (+10 XP)`),
       h('button', { type: 'button', class: 'btn btn-ghost', onclick: close }, 'Cerrar')));
   document.body.append(sheet);
 }
@@ -217,8 +218,21 @@ function startLesson(lesson, { replay } = {}) {
     lesson,
     exercises: lesson.exercises,
     practice: false,
-    onExit: opts => { if (opts?.practice) startPractice(); else render(); },
+    onExit: opts => { if (opts?.games) openHearts(); else if (opts?.practice) startPractice(); else render(); },
     onFinish: r => finishScreen(lesson, r, false, replay),
+  });
+}
+
+// ---------- Vidas y minijuegos ----------
+
+function openHearts() {
+  openHeartsSheet({
+    onGame: kind => {
+      const back = () => { announceAchievements(); tab = 'learn'; render(); };
+      if (kind === 'pairs') runPairs(app, back);
+      else runRush(app, back);
+    },
+    onPractice: () => startPractice(),
   });
 }
 

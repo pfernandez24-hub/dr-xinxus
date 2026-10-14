@@ -379,8 +379,9 @@ export function runLesson(root, { lesson, exercises, practice, exam, onExit, onF
     root.replaceChildren(h('div', { class: 'center-screen' },
       h('div', { html: mascot('sad', 120) }),
       h('h1', {}, 'Te has quedado sin vidas'),
-      h('p', { class: 'muted' }, 'Recuperas una vida cada 20 minutos. También puedes ganar una haciendo un repaso de lo que ya sabes.'),
-      h('button', { type: 'button', class: 'btn btn-main', onclick: () => onExit({ practice: true }) }, 'Repasar y ganar una vida'),
+      h('p', { class: 'muted' }, 'Recuperas una vida cada 20 minutos. O gánala ya con un minijuego o un repaso.'),
+      h('button', { type: 'button', class: 'btn btn-main', onclick: () => onExit({ games: true }) }, '🎮 Minijuegos para recuperar vidas'),
+      h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => onExit({ practice: true }) }, 'Repasar (+1 vida)'),
       h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => onExit() }, 'Volver')));
   }
 
